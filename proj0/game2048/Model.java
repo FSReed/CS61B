@@ -108,12 +108,21 @@ public class Model extends Observable {
      * */
     public boolean tilt(Side side) {
         boolean changed;
+        boolean checkchange;
         changed = false;
 
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
 
+        this.board.setViewingPerspective(side);
+        for (int col = 0; col < this.board.size(); col++) {
+            checkchange = changeThisColumn(col, this.board);
+            if (checkchange) {
+                changed = true;
+            }
+        }
+        this.board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -121,6 +130,47 @@ public class Model extends Observable {
         return changed;
     }
 
+    public boolean changeThisColumn(int col, Board b) {
+        boolean changed = false;
+        boolean[] hasmerged = new boolean[b.size()];
+        for (int position = 0; position < b.size(); position++) {
+            hasmerged[position] = false;
+        }
+        for (int row = b.size() - 2; row >= 0; row--) {
+            boolean addscore;
+            if (b.tile(col, row) == null) {
+                continue;
+            }
+            for (int trow = row + 1; trow < b.size(); trow++) {
+                if (b.tile(col, trow) == null) {
+                    changed = true;
+                    if (trow == b.size() - 1) {
+                        b.move(col, trow, b.tile(col, row));
+                        break;
+                    }
+                } else if (b.tile(col, trow).value()
+                        == b.tile(col, row).value()
+                            && !hasmerged[trow]) {
+                    changed = true;
+                    addscore = b.move(col, trow, b.tile(col, row));
+                    if (addscore) {
+                        hasmerged[trow] = true;
+                        this.score += b.tile(col, trow).value();
+                        break;
+                    }
+                } else {
+                    if (trow - 1 == row) {
+                        break;
+                    } else {
+                        b.move(col, trow - 1, b.tile(col, row));
+                        break;
+                    }
+                }
+
+            }
+        }
+        return changed;
+    }
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
      */
@@ -138,7 +188,15 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        int label = 0;
+        for(int lin = 0; lin < b.size(); lin++ ) {
+            for (int col = 0; col < b.size(); col++) {
+                if (b.tile(col, lin) == null) {
+                    label = 1;
+                }
+            }
+        }
+        return label == 1;
     }
 
     /**
@@ -148,7 +206,18 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        int label = 0;
+        for(int lin = 0; lin < b.size(); lin++ ) {
+            for (int col = 0; col < b.size(); col++) {
+                if (b.tile(col, lin) == null) {
+                    continue;
+                }
+                if (b.tile(col, lin).value() == MAX_PIECE) {
+                    label = 1;
+                }
+            }
+        }
+        return label == 1;
     }
 
     /**
@@ -159,6 +228,43 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        if (emptySpaceExists(b)) {
+            return true;
+        } else {
+            for (int col = 0; col < b.size(); col++) {
+                for (int row =0; row < b.size(); row++) {
+                    if (sameValueAround(b, col, row)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean sameValueAround(Board b, int col, int row) {
+        for (int position_col = -1; position_col <= 1; position_col++) {
+            if (position_col == -1 || position_col == 1) {
+                if ((col + position_col) < 0 || (col + position_col) >=b.size()) {
+                    continue;
+                }
+                if (b.tile(col + position_col, row).value() == b.tile(col, row).value()) {
+                    return true;
+                }
+            } else {
+                if ((row + 1) < b.size()) {
+                    if (b.tile(col, row + 1).value() == b.tile(col, row).value()) {
+                        return true;
+                    }
+                }
+                if ((row - 1) >= 0) {
+                    if (b.tile(col, row - 1).value() == b.tile(col, row).value()) {
+                        return true;
+                    }
+                }
+            }
+
+        }
         return false;
     }
 
