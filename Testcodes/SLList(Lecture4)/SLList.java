@@ -12,27 +12,35 @@ public class SLList {
     }
 
     /** Make the first of SLList private */
-    private IntNode first;
+    // private IntNode first;
+    private IntNode sentinel;
     private int size;
 
     /** Empty list instructor. */
     public SLList() {
-        first = null;
+        // first = null;
+        sentinel = new IntNode(61, null);
         size = 0;
     }
 
     public SLList(int x) {
-        first = new IntNode(x, null);
+        // first = new IntNode(x, null);
+        sentinel = new IntNode(61, null);
+        sentinel.next = new IntNode(x, null);
         size = 1;
     }
 
     public void addFirst(int x) {
-        first = new IntNode(x, first);
+        // first = new IntNode(x, first);
+        IntNode tmp = new IntNode(x, null);
+        tmp.next = sentinel.next;
+        sentinel.next = tmp;
         size += 1;
     }
 
     public int getFirst() {
-        return first.item;
+        // return first.item;
+        return sentinel.next.item;
     }
 
     /**
@@ -59,10 +67,11 @@ public class SLList {
     /**
      * Need to update this method after adding empty list into SLList class.
      * Using {if (first == null)} works, but it's a little bit ugly.(Yep)
-     * Notice the changes in the next commit!
+     * Notice the changes with SENTINEL.
      */
     public void addLast(int x) {
-        IntNode p = first;
+        // IntNode p = first;
+        IntNode p = sentinel;
         while (p.next != null) {
             p = p.next;
         }
@@ -70,6 +79,7 @@ public class SLList {
 
         size += 1;
     }
+    // Now we don't need to worry about nulls when doing addLast.
 
     public static void main(String[] args) {
         SLList L = new SLList(552);
