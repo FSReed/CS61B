@@ -50,6 +50,13 @@ public class ArrayDequeTest {
         int result2 = adq.removeLast();
         assertEquals(0, result2);
         assertEquals(6, adq.size());
+
+        ArrayDeque<String> adq2 = new ArrayDeque<String>();
+        adq2.addFirst("Student");
+        assertEquals(1, adq2.size());
+        adq2.removeLast();
+        assertEquals(0, adq2.size());
+        assertEquals(7, adq2.front);
     }
 
     @Test
