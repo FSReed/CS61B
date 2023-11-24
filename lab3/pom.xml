@@ -14,6 +14,19 @@
     <groupId>CS61B</groupId>
     <artifactId>lab3</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>javalib.CS61B</groupId>
+            <artifactId>algs4.jar</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <sourceDirectory>${project.basedir}</sourceDirectory>
