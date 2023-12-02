@@ -12,7 +12,7 @@ public class Collatz {
         if (n == 1) {
             return 1;
         } else if (n % 2 == 1) {
-            return 3 * n + 1;
+            return 2 * n + 1;
         } else {
             return n / 2;
         }
