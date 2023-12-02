@@ -1,1 +1,3 @@
 This file is created to cause the merge error.
+
+Add this line and commit.
