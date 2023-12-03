@@ -1,17 +1,17 @@
 package deque;
 import java.util.Iterator;
 
-public class ArrayDeque<Item> implements Deque<Item> {
-    private Item[] array;
+public class ArrayDeque<T> implements Deque<T> {
+    private T[] array;
     private int size;
-    public int length;
-    public int front;
-    public int tail;
+    private int length;
+    private int front;
+    private int tail;
     public ArrayDeque() {
-        array = (Item[]) new Object[8];
+        array = (T[]) new Object[8];
         length = 8;
         front = 0;
-        tail = 0;
+        tail = 1;
         size = 0;
     }
 
@@ -42,7 +42,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
 
     /* Resize the current list.*/
     private void resize(int newLength) {
-        Item[] newArray = (Item[]) new Object[newLength];
+        T[] newArray = (T[]) new Object[newLength];
         int pointer = nextPosition(front);
         for (int i = 0; i < size; i++) {
             newArray[i] = array[pointer];
@@ -55,27 +55,21 @@ public class ArrayDeque<Item> implements Deque<Item> {
     }
 
     /* Adds an item of type T to the front of the deque.*/
-    public void addFirst(Item element) {
+    public void addFirst(T element) {
         if (isFull()) {
             resize(length * 2);
         }
         array[front] = element;
-        if (isEmpty()) {
-            tail = nextPosition(tail);
-        }
         front = prevPosition(front);
         size += 1;
     }
 
     /* Adds an item of type T to the back of the deque.*/
-    public void addLast(Item element) {
+    public void addLast(T element) {
         if (isFull()) {
             resize(length * 2);
         }
         array[tail] = element;
-        if (isEmpty()) {
-            front = prevPosition(front);
-        }
         tail = nextPosition(tail);
         size += 1;
     }
@@ -96,24 +90,26 @@ public class ArrayDeque<Item> implements Deque<Item> {
         }
     }
 
-    /* Removes and returns the item at the front of the deque. If no such item exists, returns null.*/
-    public Item removeFirst() {
+    /* Removes and returns the item at the front of the deque.
+    If no such item exists, returns null.*/
+    public T removeFirst() {
         if (!isEmpty()) {
             size -= 1;
         }
         front = nextPosition(front);
-        Item result = array[front];
+        T result = array[front];
         array[front] = null;
         return result;
     }
 
-    /* Removes and returns the item at the back of the deque. If no such item exists, returns null.*/
-    public Item removeLast() {
+    /* Removes and returns the item at the back of the deque.
+    If no such item exists, returns null.*/
+    public T removeLast() {
         if (!isEmpty()) {
             size -= 1;
         }
         tail = prevPosition(tail);
-        Item result = array[tail];
+        T result = array[tail];
         array[tail] = null;
         return result;
     }
@@ -121,7 +117,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
     /**  Gets the item at the given index, where 0 is the front, 1 is the next item, and so forth.
      * If no such item exists, returns null.
      */
-    public Item get(int index) {
+    public T get(int index) {
         if (index >= size) {
             return null;
         }
@@ -129,8 +125,8 @@ public class ArrayDeque<Item> implements Deque<Item> {
         return array[target];
     }
 
-    public Iterator<Item> iterator() {
-        ArrayDeque<Item> currentDeque = this;
+    public Iterator<T> iterator() {
+        ArrayDeque<T> currentDeque = this;
         return new Iterator<>() {
             private int position;
             @Override
@@ -139,8 +135,8 @@ public class ArrayDeque<Item> implements Deque<Item> {
             }
 
             @Override
-            public Item next() {
-                Item result = currentDeque.get(position);
+            public T next() {
+                T result = currentDeque.get(position);
                 position += 1;
                 return result;
             }
@@ -148,10 +144,10 @@ public class ArrayDeque<Item> implements Deque<Item> {
     }
 
     public boolean equals(Object o) {
-        if (o instanceof ArrayDeque) {
-            if (((ArrayDeque) o).size() == this.size()) {
+        if (o instanceof Deque) {
+            if (((Deque) o).size() == this.size()) {
                 for (int i = 0; i < this.size(); i += 1) {
-                    if (!this.get(i).equals(((ArrayDeque) o).get(i))) {
+                    if (!this.get(i).equals(((Deque) o).get(i))) {
                         return false;
                     }
                 }

@@ -8,15 +8,6 @@ import static org.junit.Assert.*;
 public class ArrayDequeTest {
 
     @Test
-    public void basicAddTest() {
-        ArrayDeque<Integer> adq = new ArrayDeque<Integer>();
-        adq.addFirst(3);
-        adq.addLast(5);
-        assertEquals(7, adq.front);
-        assertEquals(2, adq.tail);
-    }
-
-    @Test
     public void printAndSizeTest() {
         ArrayDeque<Integer> adq = new ArrayDeque<Integer>();
         adq.addFirst(3);
@@ -33,7 +24,6 @@ public class ArrayDequeTest {
             adq.addFirst(i);
         }
         adq.addFirst(12);
-        assertEquals(16, adq.length);
         assertEquals(9, adq.size());
         adq.printDeque();
     }
@@ -56,7 +46,6 @@ public class ArrayDequeTest {
         assertEquals(1, adq2.size());
         adq2.removeLast();
         assertEquals(0, adq2.size());
-        assertEquals(7, adq2.front);
     }
 
     @Test

@@ -2,13 +2,13 @@ package deque;
 
 import java.util.Iterator;
 
-public class LinkedListDeque<Item> implements Deque<Item> {
+public class LinkedListDeque<T> implements Deque<T> {
     private class LinkedNode {
-        public Item item;
-        public LinkedNode prev;
-        public LinkedNode next;
+        private final T item;
+        private LinkedNode prev;
+        private LinkedNode next;
 
-        public LinkedNode(Item i, LinkedNode p, LinkedNode n) {
+        LinkedNode(T i, LinkedNode p, LinkedNode n) {
             item = i;
             prev = p;
             next = n;
@@ -26,7 +26,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /* Create a node at the beginning of the Linked List with item being element.*/
-    public void addFirst(Item element) {
+    public void addFirst(T element) {
         LinkedNode newNode = new LinkedNode(element, sentinel, sentinel.next);
         sentinel.next.prev = newNode; // This step is a little bit tricky. A pen and a piece of paper.
         sentinel.next = newNode;
@@ -34,7 +34,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /*Create a node at the end of the Linked List with item being element.*/
-    public void addLast(Item element) {
+    public void addLast(T element) {
         LinkedNode newNode = new LinkedNode(element, sentinel.prev, sentinel);
         sentinel.prev.next = newNode;
         sentinel.prev = newNode;
@@ -56,7 +56,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /* Removes and returns the item at the front of the deque.*/
-    public Item removeFirst() {
+    public T removeFirst() {
         if (!isEmpty()) {
             size -= 1;
         } // Don't know how to avoid this special case.
@@ -67,7 +67,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /* Removes and returns the item at the back of the deque.*/
-    public Item removeLast() {
+    public T removeLast() {
         if (!isEmpty()) {
             size -= 1;
         } // Don't know how to avoid this special case.
@@ -81,7 +81,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     /** Gets the item at the given index, where 0 is the front, 1 is the next item, and so forth.
      *  If no such item exists, returns null.
      */
-    public Item get(int index) {
+    public T get(int index) {
         int position = 0;
         LinkedNode current = sentinel.next;
         while (current != sentinel) {
@@ -95,12 +95,12 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /* Same as get, but uses recursion.*/
-    public Item getRecursive(int index) {
+    public T getRecursive(int index) {
         return recursiveHelper(sentinel.next, index, 0);
     }
 
     /* The helper function for getRecursive.*/
-    private Item recursiveHelper(LinkedNode starter, int index, int position) {
+    private T recursiveHelper(LinkedNode starter, int index, int position) {
         if (starter == sentinel) {
             return null;
         } else {
@@ -113,8 +113,8 @@ public class LinkedListDeque<Item> implements Deque<Item> {
         }
     }
 
-    public Iterator<Item> iterator() {
-        LinkedListDeque<Item> currentDeque = this;
+    public Iterator<T> iterator() {
+        LinkedListDeque<T> currentDeque = this;
         return new Iterator<>() {
             private int position;
             @Override
@@ -123,8 +123,8 @@ public class LinkedListDeque<Item> implements Deque<Item> {
             }
 
             @Override
-            public Item next() {
-                Item result = currentDeque.get(position);
+            public T next() {
+                T result = currentDeque.get(position);
                 position += 1;
                 return result;
             }
@@ -132,10 +132,10 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     public boolean equals(Object o) {
-        if (o instanceof LinkedListDeque) {
-            if (((LinkedListDeque) o).size() == this.size()) {
+        if (o instanceof Deque) {
+            if (((Deque) o).size() == this.size()) {
                 for (int i = 0; i < this.size(); i += 1) {
-                    if (!this.get(i).equals(((LinkedListDeque) o).get(i))) {
+                    if (!this.get(i).equals(((Deque) o).get(i))) {
                         return false;
                     }
                 }
