@@ -132,10 +132,10 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     public boolean equals(Object o) {
-        if (o instanceof LinkedListDeque newList) {
-            if (newList.size() == this.size()) {
+        if (o instanceof LinkedListDeque) {
+            if (((LinkedListDeque) o).size() == this.size()) {
                 for (int i = 0; i < this.size(); i += 1) {
-                    if (!this.get(i).equals(newList.get(i))) {
+                    if (!this.get(i).equals(((LinkedListDeque) o).get(i))) {
                         return false;
                     }
                 }

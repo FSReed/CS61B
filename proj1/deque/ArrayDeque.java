@@ -148,10 +148,10 @@ public class ArrayDeque<Item> implements Deque<Item> {
     }
 
     public boolean equals(Object o) {
-        if (o instanceof ArrayDeque newArray) {
-            if (newArray.size() == this.size()) {
+        if (o instanceof ArrayDeque) {
+            if (((ArrayDeque) o).size() == this.size()) {
                 for (int i = 0; i < this.size(); i += 1) {
-                    if (!this.get(i).equals(newArray.get(i))) {
+                    if (!this.get(i).equals(((ArrayDeque) o).get(i))) {
                         return false;
                     }
                 }
