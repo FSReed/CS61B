@@ -1,6 +1,7 @@
 package deque;
+import java.util.Iterator;
 
-public class ArrayDeque<Item> implements Deque<Item> {
+public class ArrayDeque<Item> implements Deque<Item>{
     private Item[] array;
     private int size;
     public int length;
@@ -126,5 +127,37 @@ public class ArrayDeque<Item> implements Deque<Item> {
         }
         int target = Math.floorMod(front + index + 1, length);
         return array[target];
+    }
+
+    public Iterator<Item> iterator() {
+        ArrayDeque<Item> currentDeque = this;
+        return new Iterator<>() {
+            private int position;
+            @Override
+            public boolean hasNext() {
+                return position < currentDeque.size();
+            }
+
+            @Override
+            public Item next() {
+                Item result = currentDeque.get(position);
+                position += 1;
+                return result;
+            }
+        };
+    }
+
+    public boolean equals(Object o) {
+        if (o instanceof ArrayDeque newArray) {
+            if (newArray.size() == this.size()) {
+                for (int i = 0; i < this.size(); i += 1) {
+                    if (!this.get(i).equals(newArray.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -1,5 +1,7 @@
 package deque;
 
+import java.util.Iterator;
+
 public class LinkedListDeque<Item> implements Deque<Item> {
     private class LinkedNode {
         public Item item;
@@ -111,5 +113,35 @@ public class LinkedListDeque<Item> implements Deque<Item> {
         }
     }
 
-    /* Returns whether the parameter o is equal to the Deque.*/
+    public Iterator<Item> iterator() {
+        LinkedListDeque<Item> currentDeque = this;
+        return new Iterator<>() {
+            private int position;
+            @Override
+            public boolean hasNext() {
+                return position < currentDeque.size();
+            }
+
+            @Override
+            public Item next() {
+                Item result = currentDeque.get(position);
+                position += 1;
+                return result;
+            }
+        };
+    }
+
+    public boolean equals(Object o) {
+        if (o instanceof LinkedListDeque newList) {
+            if (newList.size() == this.size()) {
+                for (int i = 0; i < this.size(); i += 1) {
+                    if (!this.get(i).equals(newList.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 }
