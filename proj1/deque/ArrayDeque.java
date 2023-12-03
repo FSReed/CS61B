@@ -1,6 +1,6 @@
 package deque;
 
-public class ArrayDeque<Item> {
+public class ArrayDeque<Item> implements Deque<Item> {
     private Item[] array;
     private int size;
     public int length;
@@ -15,7 +15,7 @@ public class ArrayDeque<Item> {
     }
 
     /** These are the helper methods.
-     * Return the potision that is one more before the current index.
+     * Return the position that is one more before the current index.
      * e.g., prevPosition(1) = 0, prevPosition(0) = length - 1
      *       nextPosition(0) = 1, nextPosition(length - 1) = 0
      */
@@ -43,7 +43,7 @@ public class ArrayDeque<Item> {
     private void resize(int newLength) {
         Item[] newArray = (Item[]) new Object[newLength];
         int pointer = nextPosition(front);
-        for (int i = 0; i < size; i ++) {
+        for (int i = 0; i < size; i++) {
             newArray[i] = array[pointer];
             pointer = nextPosition(pointer);
         }
@@ -80,9 +80,6 @@ public class ArrayDeque<Item> {
     }
 
     /* Returns true if deque is empty, false otherwise.*/
-    public boolean isEmpty() {
-        return size == 0;
-    }
 
     /*  Returns the number of items in the deque.*/
     public int size() {
