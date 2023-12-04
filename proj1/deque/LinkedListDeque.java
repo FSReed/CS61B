@@ -28,7 +28,7 @@ public class LinkedListDeque<T> implements Deque<T> {
     /* Create a node at the beginning of the Linked List with item being element.*/
     public void addFirst(T element) {
         LinkedNode newNode = new LinkedNode(element, sentinel, sentinel.next);
-        sentinel.next.prev = newNode; // This step is a little bit tricky. A pen and a piece of paper.
+        sentinel.next.prev = newNode; // This step is a little bit tricky.
         sentinel.next = newNode;
         size += 1;
     }

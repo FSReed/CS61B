@@ -59,4 +59,28 @@ public class ArrayDequeTest {
         int result2 = adq.get(7);
         assertEquals(0, result2);
     }
+
+    @Test
+    public void testUsage() {
+        ArrayDeque<Integer> adq = new ArrayDeque<>();
+        for (int i = 0; i < 10000; i += 1) {
+            adq.addFirst(i);
+        }
+        assertEquals(10000, adq.size());
+        for (int j = 0; j < 8000; j += 1) {
+            adq.removeLast();
+        }
+        assertEquals(2000, adq.size());
+    }
+
+    @Test
+    public void testIterable() {
+        ArrayDeque<Integer> adq = new ArrayDeque<>();
+        for (int i = 0; i < 10000; i += 1) {
+            adq.addFirst(i);
+        }
+        for (int i : adq) {
+            System.out.println(i);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 package deque;
 
-public interface Deque<T> {
+public interface Deque<T> extends Iterable<T> {
     void addFirst(T element);
     void addLast(T element);
     default boolean isEmpty() {

@@ -7,12 +7,14 @@ public class ArrayDeque<T> implements Deque<T> {
     private int length;
     private int front;
     private int tail;
+    private double threshold;
     public ArrayDeque() {
         array = (T[]) new Object[8];
         length = 8;
         front = 0;
         tail = 1;
         size = 0;
+        threshold = 0.25;
     }
 
     /** These are the helper methods.
@@ -35,8 +37,11 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
+    private double uRate() {
+        return (double) size / length;
+    }
     /* To check if the list is full or empty.*/
-    public boolean isFull() {
+    private boolean isFull() {
         return size == length;
     }
 
@@ -52,6 +57,12 @@ public class ArrayDeque<T> implements Deque<T> {
         length = newLength;
         front = newLength - 1;
         tail = size;
+    }
+
+    private void checkUtilization() {
+        if (uRate() < threshold && length > 8) {
+            resize(length / 4);
+        }
     }
 
     /* Adds an item of type T to the front of the deque.*/
@@ -93,24 +104,28 @@ public class ArrayDeque<T> implements Deque<T> {
     /* Removes and returns the item at the front of the deque.
     If no such item exists, returns null.*/
     public T removeFirst() {
-        if (!isEmpty()) {
-            size -= 1;
+        if (isEmpty()) {
+            return null;
         }
         front = nextPosition(front);
         T result = array[front];
         array[front] = null;
+        size -= 1;
+        checkUtilization();
         return result;
     }
 
     /* Removes and returns the item at the back of the deque.
     If no such item exists, returns null.*/
     public T removeLast() {
-        if (!isEmpty()) {
-            size -= 1;
+        if (isEmpty()) {
+            return null;
         }
         tail = prevPosition(tail);
         T result = array[tail];
         array[tail] = null;
+        size -= 1;
+        checkUtilization();
         return result;
     }
 

@@ -141,4 +141,15 @@ public class LinkedListDequeTest {
         assertEquals(null, lld1.get(200));
         assertEquals(null, lld1.getRecursive(200));
     }
+
+    @Test
+    public void testIterable() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        for (int i : lld1) {
+            System.out.println(i);
+        }
+    }
 }
