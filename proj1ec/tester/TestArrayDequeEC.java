@@ -29,7 +29,7 @@ public class TestArrayDequeEC {
                         System.out.println("removeFirst()");
                         Integer result1 = ads.removeFirst();
                         Integer result2 = sad.removeFirst();
-                        assertEquals("Remove first should be equal.", result1, result2);
+                        assertEquals(result1, result2);
                     }
                     break;
                 case 3:
@@ -37,7 +37,7 @@ public class TestArrayDequeEC {
                         System.out.println("removeLast()");
                         Integer r1 = ads.removeLast();
                         Integer r2 = sad.removeLast();
-                        assertEquals("Remove last should be equal.", r1, r2);
+                        assertEquals(r1, r2);
                     }
                     break;
                 default:
