@@ -51,10 +51,10 @@ public class CapersRepository {
      */
     public static void writeStory(String text) {
         // TODO
-        File story = Utils.join(CAPERS_FOLDER, "story");
+        File story = join(CAPERS_FOLDER, "story");
         if (story.exists()) {
-            String prevStory = Utils.readContentsAsString(story);
-            Utils.writeContents(story, prevStory, text, "\n");
+            String prevStory = readContentsAsString(story);
+            writeContents(story, prevStory, text, "\n");
             System.out.println(prevStory + text);
         }
     }
@@ -68,6 +68,7 @@ public class CapersRepository {
         // TODO
         Dog d = new Dog(name, breed, age);
         d.saveDog();
+        System.out.println(d.toString());
     }
 
     /**
@@ -79,7 +80,7 @@ public class CapersRepository {
      */
     public static void celebrateBirthday(String name) {
         // TODO
-        File tmp = new File(name);
+        File tmp = join(Dog.DOG_FOLDER, name);
         if (tmp.exists()) {
             Dog currentDog = Dog.fromFile(name);
             currentDog.haveBirthday();

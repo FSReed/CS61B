@@ -45,7 +45,7 @@ public class Dog implements Serializable { // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
-        File currentFile = new File(name);
+        File currentFile = join(DOG_FOLDER, name);
         if (currentFile.exists()) {
             Dog currentDog = readObject(currentFile, Dog.class);
             return currentDog;
@@ -67,7 +67,7 @@ public class Dog implements Serializable { // TODO
      */
     public void saveDog() throws IOException {
         // TODO (hint: don't forget dog names are unique.
-        File tmp = new File(this.name);
+        File tmp = join(DOG_FOLDER, this.name);
         if (!tmp.exists()) {
             writeObject(tmp, this);
             tmp.createNewFile();
