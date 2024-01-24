@@ -7,7 +7,7 @@
 !.fatweleminus
 !.gitignore
 !README.md
-library-sp21
+!library-sp21
 !foods.csv
 *.class
 *.log
