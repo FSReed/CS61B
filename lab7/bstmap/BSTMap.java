@@ -3,7 +3,7 @@ package bstmap;
 import java.util.Iterator;
 import java.util.Set;
 
-public class BSTMap<K, V> implements Map61B<K, V> {
+public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     private TreeNode root;
     private int size = 0;
@@ -42,7 +42,7 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(K key) {
         return false;
     }
 
@@ -57,7 +57,7 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     }
 
     @Override
-    public void put(Object key, Object value) {
+    public void put(K key, V value) {
 
     }
 
@@ -67,12 +67,12 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     }
 
     @Override
-    public V remove(Object key) {
+    public V remove(K key) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public V remove(Object key, Object value) {
+    public V remove(K key, V value) {
         throw new UnsupportedOperationException();
     }
 
@@ -80,7 +80,7 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     public Iterator<K> iterator() {
         return null;
     }
-    
+
     public void printInOrder() {
 
     }
