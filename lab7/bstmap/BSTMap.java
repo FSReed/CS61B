@@ -36,7 +36,8 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     }
     @Override
     public void clear() {
-
+        size = 0;
+        root = null;
     }
 
     @Override
