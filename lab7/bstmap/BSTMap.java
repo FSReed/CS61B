@@ -12,7 +12,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private class TreeNode {
         K key;
         V value;
-        int size;
         TreeNode left;
         TreeNode right;
 
@@ -20,21 +19,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         TreeNode(K k, V v) {
             key = k;
             value = v;
-            size = 1;
             left = null;
             right = null;
         }
-
-        void addLeft(TreeNode L) {
-            this.size += L.size;
-            this.left = L;
-        }
-
-        void addRight(TreeNode R) {
-            this.size += R.size;
-            this.right = R;
-        }
     }
+
     @Override
     public void clear() {
         size = 0;
