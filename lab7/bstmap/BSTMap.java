@@ -8,6 +8,7 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     private TreeNode root;
     private int size = 0;
 
+
     private class TreeNode {
         K key;
         V value;
@@ -46,7 +47,7 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     }
 
     @Override
-    public Object get(Object key) {
+    public V get(K key) {
         return null;
     }
 
@@ -61,25 +62,25 @@ public class BSTMap<K, V> implements Map61B<K, V> {
     }
 
     @Override
-    public Set keySet() {
+    public Set<K> keySet() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object remove(Object key) {
+    public V remove(Object key) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object remove(Object key, Object value) {
+    public V remove(Object key, Object value) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Iterator iterator() {
-        throw new UnsupportedOperationException();
+    public Iterator<K> iterator() {
+        return null;
     }
-
+    
     public void printInOrder() {
 
     }
