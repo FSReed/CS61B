@@ -114,6 +114,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     public void put(K key, V value) {
         if (root == null) {
             root = new TreeNode(key, value);
+            size += 1;
         } else {
             boolean newNode = root.insert(key, value);
             if (newNode) {
