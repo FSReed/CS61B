@@ -51,6 +51,37 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
                 return right.get(k);
             }
         }
+
+        /** Helper Function for put() */
+        boolean insert(K k, V v) {
+            if (k.equals(key)) {
+                value = v;
+                return false;
+            } else if (k.compareTo(key) < 0) {
+                return insertLeft(k, v);
+            } else {
+                return insertRight(k, v);
+            }
+        }
+
+        /** Two Helpers for the helper function insert */
+        boolean insertLeft(K k, V v) {
+            if (left == null) {
+                left = new TreeNode(k, v);
+                return true;
+            } else {
+                return left.insert(k, v);
+            }
+        }
+
+        boolean insertRight(K k, V v) {
+            if (right == null) {
+                right = new TreeNode(k, v);
+                return true;
+            } else {
+                return right.insert(k, v);
+            }
+        }
     }
 
     @Override
@@ -76,12 +107,19 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
     public void put(K key, V value) {
-
+        if (root == null) {
+            root = new TreeNode(key, value);
+        } else {
+            boolean newNode = root.insert(key, value);
+            if (newNode) {
+                size += 1;
+            }
+        }
     }
 
     @Override
@@ -105,6 +143,5 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     public void printInOrder() {
-
     }
 }
