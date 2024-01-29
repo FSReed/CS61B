@@ -101,9 +101,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         private V simpleDelete() {
             V result = this.value;
             if (key.compareTo(parent.key) < 0) {
-                parent.left = (this.left == null) ? this.right : null;
+                parent.left = (this.left == null) ? this.right : this.left;
             } else {
-                parent.right = (this.left == null) ? this.right : null;
+                parent.right = (this.left == null) ? this.right : this.left;
             }
             return result;
         }
