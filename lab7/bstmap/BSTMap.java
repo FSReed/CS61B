@@ -206,15 +206,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             return target.remove();
         }
     }
-
-    public K parentTest(K key) {
-        TreeNode result = root.get(key);
-        if (result == null) {
-            return null;
-        } else {
-            return result.parent.key;
-        }
-    }
+    
     @Override
     public Iterator<K> iterator() {
         return new BSTIter();
