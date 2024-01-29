@@ -98,12 +98,19 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             }
         }
 
+        /** This is where most bugs appear */
         private V simpleDelete() {
             V result = this.value;
-            if (key.compareTo(parent.key) < 0) {
-                parent.left = (this.left == null) ? this.right : this.left;
+            TreeNode child = (this.left == null) ? this.right : this.left;
+            if (this.parent == null) {
+                root = child;
+            } else if (key.compareTo(parent.key) < 0) {
+                parent.left = child;
             } else {
-                parent.right = (this.left == null) ? this.right : this.left;
+                parent.right = child;
+            }
+            if (child != null) {
+                child.parent = parent;
             }
             return result;
         }
