@@ -2,6 +2,7 @@ package bstmap;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Stack;
 
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
@@ -148,21 +149,34 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     private class BSTIter implements Iterator<K> {
 
+        /** Create a stack, and do the first time push */
         BSTIter() {
             current = root;
+            stackForNodes = new Stack<>();
+            pushTillMin(current);
         }
+
         @Override
         public boolean hasNext() {
-            return current != null;
+            return !stackForNodes.isEmpty();
         }
 
         @Override
         public K next() {
-            K result = current.key;
-            current = current.left;
-            return result;
+            current = stackForNodes.pop();
+            pushTillMin(current.right);
+            return current.key;
         }
 
+        /** Push till the minimum key goes to the top of the stack */
+        private void pushTillMin(TreeNode N) {
+            while (N != null) {
+                stackForNodes.push(N);
+                N = N.left;
+            }
+        }
+
+        private Stack<TreeNode> stackForNodes;
         private TreeNode current;
     }
 
