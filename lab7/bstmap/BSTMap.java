@@ -176,10 +176,14 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             }
         }
 
-        private Stack<TreeNode> stackForNodes;
+        private final Stack<TreeNode> stackForNodes;
         private TreeNode current;
     }
 
     public void printInOrder() {
+        for(K key: this) {
+            V value = get(key);
+            System.out.print(key + " -> " + value + '\n');
+        }
     }
 }

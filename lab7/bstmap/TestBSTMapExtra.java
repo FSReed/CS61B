@@ -125,11 +125,12 @@ public class TestBSTMapExtra {
 
         int test = 1;
         for (String s: tmp) {
-            System.out.println(s);
             Integer result = tmp.get(s);
             assertEquals((int) result, test);
             test += 1;
         }
+
+        tmp.printInOrder();
     }
 
 }
