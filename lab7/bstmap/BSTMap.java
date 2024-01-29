@@ -1,7 +1,9 @@
 package bstmap;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Stack;
 
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
@@ -14,6 +16,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         V value;
         TreeNode left;
         TreeNode right;
+        TreeNode parent;
 
         /** Create a TreeNode with no children. */
         TreeNode(K k, V v) {
@@ -21,6 +24,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             value = v;
             left = null;
             right = null;
+            parent = null;
         }
 
         /** Helper Function For get() */
@@ -65,22 +69,69 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
 
         /** Two Helpers for the helper function insert */
-        boolean insertLeft(K k, V v) {
+        private boolean insertLeft(K k, V v) {
             if (left == null) {
                 left = new TreeNode(k, v);
+                left.parent = this;
                 return true;
             } else {
                 return left.insert(k, v);
             }
         }
 
-        boolean insertRight(K k, V v) {
+        private boolean insertRight(K k, V v) {
             if (right == null) {
                 right = new TreeNode(k, v);
+                right.parent = this;
                 return true;
             } else {
                 return right.insert(k, v);
             }
+        }
+
+        /** Helper Function for remove() */
+        V remove() {
+            if (left != null && right != null) {
+                return twoChildrenDelete();
+            } else {
+                return simpleDelete();
+            }
+        }
+
+        /** This is where most bugs appear */
+        private V simpleDelete() {
+            V result = this.value;
+            TreeNode child = (this.left == null) ? this.right : this.left;
+            if (this.parent == null) {
+                root = child;
+            } else if (key.compareTo(parent.key) < 0) {
+                parent.left = child;
+            } else {
+                parent.right = child;
+            }
+            if (child != null) {
+                child.parent = parent;
+            }
+            return result;
+        }
+
+        private V twoChildrenDelete() {
+            TreeNode leftMax = findMax(left);
+            V result = this.value;
+            K tempKey = leftMax.key;
+            V tempValue = leftMax.value;
+            leftMax.simpleDelete();
+            this.key = tempKey;
+            this.value = tempValue;
+            return result;
+        }
+
+        TreeNode findMax(TreeNode T) {
+            TreeNode pointer = T;
+            while (pointer.right != null) {
+                pointer = pointer.right;
+            }
+            return pointer;
         }
     }
 
@@ -103,9 +154,13 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (root == null) {
             return null;
         } else {
-            return root.get(k).value;
+            TreeNode target = root.get(k);
+            if (target == null) {
+                return null;
+            } else {
+                return target.value;
+            }
         }
-
     }
 
     @Override
@@ -128,24 +183,72 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        HashSet<K> result = new HashSet<>();
+        for(K key: this) {
+            result.add(key);
+        }
+        return result;
     }
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        V value = get(key);
+        return remove(key, value);
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        TreeNode target = root.get(key);
+        if (target == null || !target.value.equals(value)) {
+            return null;
+        } else {
+            size -= 1;
+            return target.remove();
+        }
     }
-
+    
     @Override
     public Iterator<K> iterator() {
-        return null;
+        return new BSTIter();
+    }
+
+    private class BSTIter implements Iterator<K> {
+
+        /** Create a stack, and do the first time push */
+        BSTIter() {
+            current = root;
+            stackForNodes = new Stack<>();
+            pushTillMin(current);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !stackForNodes.isEmpty();
+        }
+
+        @Override
+        public K next() {
+            current = stackForNodes.pop();
+            pushTillMin(current.right);
+            return current.key;
+        }
+
+        /** Push till the minimum key goes to the top of the stack */
+        private void pushTillMin(TreeNode N) {
+            while (N != null) {
+                stackForNodes.push(N);
+                N = N.left;
+            }
+        }
+
+        private final Stack<TreeNode> stackForNodes;
+        private TreeNode current;
     }
 
     public void printInOrder() {
+        for(K key: this) {
+            V value = get(key);
+            System.out.print(key + " -> " + value + '\n');
+        }
     }
 }
