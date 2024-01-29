@@ -24,9 +24,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
 
         /** Helper Function For get() */
-        V get(K k) {
+        TreeNode get(K k) {
             if (k.equals(key)) {
-                return value;
+                return this;
             }
             if (k.compareTo(key) < 0) {
                 return searchLeft(k);
@@ -36,7 +36,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
 
         /** Two Helpers for the Helper */
-        V searchLeft(K k) {
+        TreeNode searchLeft(K k) {
             if (left == null) {
                 return null;
             } else {
@@ -44,7 +44,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             }
         }
 
-        V searchRight(K k) {
+        TreeNode searchRight(K k) {
             if (right == null) {
                 return null;
             } else {
@@ -92,7 +92,10 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public boolean containsKey(K k) {
-        return get(k) != null;
+        if (root == null) {
+            return false;
+        }
+        return root.get(k) != null;
     }
 
     @Override
@@ -100,7 +103,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (root == null) {
             return null;
         } else {
-            return root.get(k);
+            return root.get(k).value;
         }
 
     }
