@@ -154,9 +154,13 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (root == null) {
             return null;
         } else {
-            return root.get(k).value;
+            TreeNode target = root.get(k);
+            if (target == null) {
+                return null;
+            } else {
+                return target.value;
+            }
         }
-
     }
 
     @Override
@@ -188,16 +192,19 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public V remove(K key) {
-        TreeNode target = root.get(key);
-        if (target == null) {
-            return null;
-        }
-        return target.remove();
+        V value = get(key);
+        return remove(key, value);
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        TreeNode target = root.get(key);
+        if (target == null || !target.value.equals(value)) {
+            return null;
+        } else {
+            size -= 1;
+            return target.remove();
+        }
     }
 
     public K parentTest(K key) {
