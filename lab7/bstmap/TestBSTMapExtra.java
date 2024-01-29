@@ -133,4 +133,18 @@ public class TestBSTMapExtra {
         tmp.printInOrder();
     }
 
+    @Test
+    public void sanityParentTest() {
+        BSTMap<String, Integer> tmp = new BSTMap<>();
+        tmp.put("Here", 4);
+        tmp.put("Comes", 2);
+        tmp.put("Alpha", 1);
+        tmp.put("What", 6);
+        tmp.put("The", 5);
+        tmp.put("Heck", 3);
+        assertEquals("Here", tmp.parentTest("Comes"));
+        assertEquals("Comes", tmp.parentTest("Alpha"));
+        assertEquals("What", tmp.parentTest("The"));
+        assertEquals("Here", tmp.parentTest("What"));
+    }
 }

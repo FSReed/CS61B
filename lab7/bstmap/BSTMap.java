@@ -16,6 +16,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         V value;
         TreeNode left;
         TreeNode right;
+        TreeNode parent;
 
         /** Create a TreeNode with no children. */
         TreeNode(K k, V v) {
@@ -23,6 +24,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             value = v;
             left = null;
             right = null;
+            parent = null;
         }
 
         /** Helper Function For get() */
@@ -67,22 +69,60 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
 
         /** Two Helpers for the helper function insert */
-        boolean insertLeft(K k, V v) {
+        private boolean insertLeft(K k, V v) {
             if (left == null) {
                 left = new TreeNode(k, v);
+                left.parent = this;
                 return true;
             } else {
                 return left.insert(k, v);
             }
         }
 
-        boolean insertRight(K k, V v) {
+        private boolean insertRight(K k, V v) {
             if (right == null) {
                 right = new TreeNode(k, v);
+                right.parent = this;
                 return true;
             } else {
                 return right.insert(k, v);
             }
+        }
+
+        /** Helper Function for remove() */
+        V remove() {
+            if (left != null && right != null) {
+                return twoChildrenDelete();
+            } else {
+                return simpleDelete();
+            }
+        }
+
+        private V simpleDelete() {
+            V result = this.value;
+            if (key.compareTo(parent.key) < 0) {
+                parent.left = (this.left == null) ? this.right : null;
+            } else {
+                parent.right = (this.left == null) ? this.right : null;
+            }
+            return result;
+        }
+
+        private V twoChildrenDelete() {
+            TreeNode leftMax = findMax(left);
+            V result = this.value;
+            this.key = leftMax.key;
+            this.value = leftMax.value;
+            leftMax.simpleDelete();
+            return result;
+        }
+
+        TreeNode findMax(TreeNode T) {
+            TreeNode pointer = T;
+            while (pointer.right != null) {
+                pointer = pointer.right;
+            }
+            return pointer;
         }
     }
 
@@ -139,7 +179,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        TreeNode target = root.get(key);
+        if (target == null) {
+            return null;
+        }
+        return target.remove();
     }
 
     @Override
@@ -147,6 +191,14 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         throw new UnsupportedOperationException();
     }
 
+    public K parentTest(K key) {
+        TreeNode result = root.get(key);
+        if (result == null) {
+            return null;
+        } else {
+            return result.parent.key;
+        }
+    }
     @Override
     public Iterator<K> iterator() {
         return new BSTIter();
