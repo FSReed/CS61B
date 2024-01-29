@@ -143,7 +143,27 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public Iterator<K> iterator() {
-        return null;
+        return new BSTIter();
+    }
+
+    private class BSTIter implements Iterator<K> {
+
+        BSTIter() {
+            current = root;
+        }
+        @Override
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        @Override
+        public K next() {
+            K result = current.key;
+            current = current.left;
+            return result;
+        }
+
+        private TreeNode current;
     }
 
     public void printInOrder() {
