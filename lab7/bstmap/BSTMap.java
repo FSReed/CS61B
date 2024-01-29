@@ -111,9 +111,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         private V twoChildrenDelete() {
             TreeNode leftMax = findMax(left);
             V result = this.value;
-            this.key = leftMax.key;
-            this.value = leftMax.value;
+            K tempKey = leftMax.key;
+            V tempValue = leftMax.value;
             leftMax.simpleDelete();
+            this.key = tempKey;
+            this.value = tempValue;
             return result;
         }
 
