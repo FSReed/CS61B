@@ -1,6 +1,7 @@
 package hashmap;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  *  A hash table-backed Map implementation. Provides amortized constant time
@@ -145,6 +146,9 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         this.maxLoad = Double.POSITIVE_INFINITY;
     }
 
+    public Iterator<K> iterator() {
+        return new MyHashMapIterator();
+    }
     /** Helper function for getting the right bucket */
     private int getBucket(K key) {
         int hashing = key.hashCode();
@@ -168,5 +172,43 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
         this.buckets = newBuckets;
         this.size = newSize;
+    }
+
+    /** Iterator class */
+    private class MyHashMapIterator implements Iterator<K> {
+
+        public MyHashMapIterator() {
+            this.currentBucket = 0;
+            this.iter = buckets[0].iterator();
+            this.count = 0;
+        }
+        @Override
+        public boolean hasNext() {
+            return count < size;
+        }
+
+        @Override
+        public K next() {
+            if (iter.hasNext()) {
+                count += 1;
+                return iter.next().key;
+            } else {
+                findNewIterator();
+                count += 1;
+                return this.iter.next().key;
+            }
+        }
+
+        /** Helper Function for finding the new bucket to iterate */
+        private void findNewIterator() {
+            while (!this.iter.hasNext()) {
+                currentBucket += 1;
+                this.iter = buckets[currentBucket].iterator();
+            }
+        }
+
+        private int currentBucket;
+        private Iterator<Node> iter;
+        private int count;
     }
 }
