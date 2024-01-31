@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.ArrayList;
 
 /**
  *  A hash table-backed Map implementation. Provides amortized constant time
@@ -106,7 +107,11 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param tableSize the size of the table to create
      */
     private Collection<Node>[] createTable(int tableSize) {
-        return (Collection<Node>[]) new Collection[tableSize];
+        Collection<Node>[] newTable = (Collection<Node>[]) new Collection[tableSize];
+        for (int i = 0; i < tableSize; i++) {
+            newTable[i] = createBucket();
+        }
+        return newTable;
     }
 
     // TODO: Implement the methods of the Map61B Interface below
@@ -145,10 +150,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     }
 
     public void clear() {
-        this.buckets = null;
-        this.size = 0;
-        this.nodeNumber = 0;
-        this.maxLoad = Double.POSITIVE_INFINITY;
+        constructor(1);
     }
 
     public Iterator<K> iterator() {
