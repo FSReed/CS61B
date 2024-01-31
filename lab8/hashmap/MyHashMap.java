@@ -7,7 +7,7 @@ import java.util.Collection;
  *  access to elements via get(), remove(), and put() in the best case.
  *
  *  Assumes null keys will never be inserted, and does not resize down upon remove().
- *  @author YOUR NAME HERE
+ *  @author FSReed
  */
 public class MyHashMap<K, V> implements Map61B<K, V> {
 
@@ -28,11 +28,24 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     /* Instance Variables */
     private Collection<Node>[] buckets;
     // You should probably define some more!
+    private int size;
+    private int nodeNumber;
+    private double maxLoad;
 
     /** Constructors */
-    public MyHashMap() { }
+    public MyHashMap() {
+        this.buckets = null;
+        this.size = 0;
+        this.nodeNumber = 0;
+        this.maxLoad = Double.POSITIVE_INFINITY;
+    }
 
-    public MyHashMap(int initialSize) { }
+    public MyHashMap(int initialSize) {
+        this.buckets = (Collection<Node>[]) new Collection[initialSize];
+        this.size = initialSize;
+        this.nodeNumber = 0;
+        this.maxLoad = Double.POSITIVE_INFINITY;
+    }
 
     /**
      * MyHashMap constructor that creates a backing array of initialSize.
@@ -41,13 +54,18 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param initialSize initial size of backing array
      * @param maxLoad maximum load factor
      */
-    public MyHashMap(int initialSize, double maxLoad) { }
+    public MyHashMap(int initialSize, double maxLoad) {
+        this.buckets = (Collection<Node>[]) new Collection[initialSize];
+        this.size = initialSize;
+        this.nodeNumber = 0;
+        this.maxLoad = maxLoad;
+    }
 
     /**
      * Returns a new node to be placed in a hash table bucket
      */
     private Node createNode(K key, V value) {
-        return null;
+        return new Node(key, value);
     }
 
     /**
@@ -82,10 +100,24 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param tableSize the size of the table to create
      */
     private Collection<Node>[] createTable(int tableSize) {
-        return null;
+        return (Collection<Node>[]) new Collection[tableSize];
     }
 
     // TODO: Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
+    public void put(K key, V value) {
+        int hashing = key.hashCode();
+        int position = Math.floorMod(hashing, this.size);
+        for (Node n: buckets[position]) {
+            if (n.key.equals(key)) {
+                n.value = value;
+                return;
+            }
+        }
+        Node temp = new Node(key, value);
+        buckets[position].add(temp);
+        this.nodeNumber += 1;
+    }
+
 
 }
