@@ -116,6 +116,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         Node temp = new Node(key, value);
         buckets[position].add(temp);
         this.nodeNumber += 1;
+        update();
     }
 
     public V get(K key) {
@@ -137,9 +138,35 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return this.nodeNumber;
     }
 
+    public void clear() {
+        this.buckets = null;
+        this.size = 0;
+        this.nodeNumber = 0;
+        this.maxLoad = Double.POSITIVE_INFINITY;
+    }
+
     /** Helper function for getting the right bucket */
     private int getBucket(K key) {
         int hashing = key.hashCode();
         return Math.floorMod(hashing, this.size);
+    }
+
+    /** Helper function for resizing the table */
+    private void update() {
+        double rate = (this.nodeNumber) / ((double) this.size);
+        if (rate <= this.maxLoad) {
+            return;
+        }
+        int newSize = this.size * 2;
+        Collection<Node>[] newBuckets = createTable(newSize);
+        for (Collection<Node> bucket: this.buckets) {
+            for (Node n: bucket) {
+                int hashing = n.key.hashCode();
+                int newPosition = Math.floorMod(hashing, newSize);
+                newBuckets[newPosition].add(n);
+            }
+        }
+        this.buckets = newBuckets;
+        this.size = newSize;
     }
 }
