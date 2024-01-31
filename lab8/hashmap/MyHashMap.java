@@ -116,7 +116,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return newTable;
     }
 
-    // TODO: Implement the methods of the Map61B Interface below
+    // Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
     public void put(K key, V value) {
         int position = getBucket(key);
@@ -219,7 +219,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     /** Iterator class */
     private class MyHashMapIterator implements Iterator<K> {
 
-        public MyHashMapIterator() {
+        MyHashMapIterator() {
             this.currentBucket = 0;
             this.iter = buckets[0].iterator();
             this.count = 0;
