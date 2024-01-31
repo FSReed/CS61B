@@ -133,6 +133,10 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return get(key) != null;
     }
 
+    public int size() {
+        return this.nodeNumber;
+    }
+
     /** Helper function for getting the right bucket */
     private int getBucket(K key) {
         int hashing = key.hashCode();
