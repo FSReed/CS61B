@@ -1,0 +1,40 @@
+# Speed Test
+
+## InsertInOrder
+
+```Text
+This program inserts lexicographically increasing Strings into Maps as <String, Integer> pairs.
+
+Enter # strings to insert into hashmap.ULLMap: 20000
+class hashmap.ULLMap: 2.81 sec
+
+Enter # strings to insert into hashmap.MyHashMap: 20000
+class hashmap.MyHashMap: 0.03 sec
+
+Enter # strings to insert into Java's HashMap: 20000
+Java's Built-in HashMap: 0.01 sec
+```
+
+## RandomOrderSpeed
+
+```Text
+This program inserts random Strings of length L
+ Into different types of maps as <String, Integer> pairs.
+
+What would you like L to be?: 20
+
+Enter # strings to insert into hashmap.ULLMap: 20000
+class hashmap.ULLMap: 1.56 sec
+
+Enter # strings to insert into your hashmap.MyHashMap: 20000
+class hashmap.MyHashMap: 0.02 sec
+
+Enter # strings to insert into Java's HashMap: 20000
+Java's Built-in HashMap: 0.01 sec
+```
+
+This time, MyHashMap behaves almost the same to the built-in HashMap on InsertInOrder!
+
+## Use different DS to represent the bucket
+
+It turns out that the time cost is almost the same with each other.
