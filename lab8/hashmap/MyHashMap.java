@@ -60,7 +60,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     }
 
     /** Helper Function For Constructors */
-    protected void constructor(int initialSize) {
+    private void constructor(int initialSize) {
         this.buckets = (Collection<Node>[]) new Collection[initialSize];
         for (int i = 0; i < initialSize; i++) {
             buckets[i] = this.createBucket();
