@@ -106,8 +106,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     // TODO: Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
     public void put(K key, V value) {
-        int hashing = key.hashCode();
-        int position = Math.floorMod(hashing, this.size);
+        int position = getBucket(key);
         for (Node n: buckets[position]) {
             if (n.key.equals(key)) {
                 n.value = value;
@@ -119,5 +118,19 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         this.nodeNumber += 1;
     }
 
+    public V get(K key) {
+        int position = getBucket(key);
+        for (Node n: buckets[position]) {
+            if (n.key.equals(key)) {
+                return n.value;
+            }
+        }
+        return null;
+    }
 
+    /** Helper function for getting the right bucket */
+    private int getBucket(K key) {
+        int hashing = key.hashCode();
+        return Math.floorMod(hashing, this.size);
+    }
 }
