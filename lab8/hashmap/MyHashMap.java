@@ -1,7 +1,9 @@
 package hashmap;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  *  A hash table-backed Map implementation. Provides amortized constant time
@@ -155,6 +157,39 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return Math.floorMod(hashing, this.size);
     }
 
+    @Override
+    public V remove(K key) {
+        int position = getBucket(key);
+        for (Node n: buckets[position]) {
+            if (n.key.equals(key)) {
+                buckets[position].remove(n);
+                return n.value;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Set<K> keySet() {
+        HashSet<K> newSet = new HashSet<>();
+        for (K key: this) {
+            newSet.add(key);
+        }
+        return newSet;
+    }
+
+    @Override
+    public V remove(K key, V value) {
+        int position = getBucket(key);
+        for (Node n: buckets[position]) {
+            if (n.key.equals(key) && n.value.equals(value)) {
+                buckets[position].remove(n);
+                return n.value;
+            }
+        }
+        return null;
+    }
+
     /** Helper function for resizing the table */
     private void update() {
         double rate = (this.nodeNumber) / ((double) this.size);
@@ -189,14 +224,11 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
         @Override
         public K next() {
-            if (iter.hasNext()) {
-                count += 1;
-                return iter.next().key;
-            } else {
+            if (!iter.hasNext()) {
                 findNewIterator();
-                count += 1;
-                return this.iter.next().key;
             }
+            count += 1;
+            return iter.next().key;
         }
 
         /** Helper Function for finding the new bucket to iterate */
