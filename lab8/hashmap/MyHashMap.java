@@ -34,15 +34,17 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     // You should probably define some more!
     private int size;
     private int nodeNumber;
-    private double maxLoad;
+    private double loadFactor;
 
     /** Constructors */
     public MyHashMap() {
-        constructor(5);
+        constructor(16);
+        loadFactor = 0.75;
     }
 
     public MyHashMap(int initialSize) {
         constructor(initialSize);
+        loadFactor = 0.75;
     }
 
     /**
@@ -54,7 +56,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      */
     public MyHashMap(int initialSize, double maxLoad) {
         constructor(initialSize);
-        this.maxLoad = maxLoad;
+        this.loadFactor = maxLoad;
     }
 
     /** Helper Function For Constructors */
@@ -64,7 +66,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
             buckets[i] = this.createBucket();
         }
         this.size = initialSize;
-        this.maxLoad = Double.POSITIVE_INFINITY;
+        this.loadFactor = Double.POSITIVE_INFINITY;
         this.nodeNumber = 0;
     }
 
@@ -198,7 +200,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     /** Helper function for resizing the table */
     private void update() {
         double rate = (this.nodeNumber) / ((double) this.size);
-        if (rate <= this.maxLoad) {
+        if (rate <= this.loadFactor) {
             return;
         }
         int newSize = this.size * 2;
