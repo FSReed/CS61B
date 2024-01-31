@@ -7,7 +7,7 @@ import edu.princeton.cs.algs4.Stopwatch;
 
 import hashmap.Map61B;
 import hashmap.ULLMap;
-import hashmap.MyHashMap;
+import hashmap.*;
 
 /**
  * Performs a timing test on three different set implementations.
@@ -37,7 +37,7 @@ public class InsertInOrderSpeedTest {
                     i.waitForPositiveInt(input));
 
             System.out.print("\nEnter # strings to insert into hashmap.MyHashMap: ");
-            timeInOrderMap61B(new MyHashMap<String, Integer>(),
+            timeInOrderMap61B(new MyHashMapTSBuckets<String, Integer>(),
                     i.waitForPositiveInt(input));
 
             System.out.print("\nEnter # strings to insert into Java's HashMap: ");
