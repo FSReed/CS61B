@@ -37,17 +37,11 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     /** Constructors */
     public MyHashMap() {
-        this.buckets = null;
-        this.size = 0;
-        this.nodeNumber = 0;
-        this.maxLoad = Double.POSITIVE_INFINITY;
+        constructor(5);
     }
 
     public MyHashMap(int initialSize) {
-        this.buckets = (Collection<Node>[]) new Collection[initialSize];
-        this.size = initialSize;
-        this.nodeNumber = 0;
-        this.maxLoad = Double.POSITIVE_INFINITY;
+        constructor(initialSize);
     }
 
     /**
@@ -58,10 +52,19 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param maxLoad maximum load factor
      */
     public MyHashMap(int initialSize, double maxLoad) {
-        this.buckets = (Collection<Node>[]) new Collection[initialSize];
-        this.size = initialSize;
-        this.nodeNumber = 0;
+        constructor(initialSize);
         this.maxLoad = maxLoad;
+    }
+
+    /** Helper Function For Constructors */
+    protected void constructor(int initialSize) {
+        this.buckets = (Collection<Node>[]) new Collection[initialSize];
+        for (int i = 0; i < initialSize; i++) {
+            buckets[i] = this.createBucket();
+        }
+        this.size = initialSize;
+        this.maxLoad = Double.POSITIVE_INFINITY;
+        this.nodeNumber = 0;
     }
 
     /**
@@ -90,7 +93,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * OWN BUCKET DATA STRUCTURES WITH THE NEW OPERATOR!
      */
     protected Collection<Node> createBucket() {
-        return null;
+        return new ArrayList<>();
     }
 
     /**
