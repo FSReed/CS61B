@@ -128,6 +128,11 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return null;
     }
 
+    @Override
+    public boolean containsKey(K key) {
+        return get(key) != null;
+    }
+
     /** Helper function for getting the right bucket */
     private int getBucket(K key) {
         int hashing = key.hashCode();
