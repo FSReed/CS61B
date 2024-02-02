@@ -7,6 +7,7 @@
 !.fatweleminus
 !.gitignore
 !README.md
+!*.drawio
 !library-sp21
 !foods.csv
 *.class
