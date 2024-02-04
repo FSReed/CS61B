@@ -41,11 +41,14 @@ public class Repository {
     public static final File COMMIT_PATH = join(GITLET_DIR, "commits");
     /** The staging directory */
     public static final File STAGING_PATH = join(GITLET_DIR, "stage");
-    /** The branches directory */
-    public static final File BRANCH_PATH = join(GITLET_DIR, "branches");
     /** The HEAD of the repo */
     public static String HEAD = null;
-    public static Branch currentBranch = null;
+    /** The current branch of the repo. */
+    public static String currentBranch = null;
+    /** Using a map to store all the branches
+     * The key is the name of the branch, the value is the sha1 of the commit
+     */
+    private static final HashMap<String, String> Branches = new HashMap<>();
 
     /* TODO: fill in the rest of this class. */
 
@@ -54,18 +57,23 @@ public class Repository {
         GITLET_DIR.mkdir();
         COMMIT_PATH.mkdir();
         STAGING_PATH.mkdir();
-        BRANCH_PATH.mkdir();
-        currentBranch = new Branch("master", null);
+        currentBranch = "master";
+        Branches.put("master", HEAD);
     }
 
-    /** Make a commit with message s */
+    /** Make a commit with message s.
+     * The parent commit will be the HEAD of this repo.
+     */
     public static void commit(String s) throws IOException {
-        Commit newOne = new Commit(s, null);
+        Commit newOne = new Commit(s, HEAD);
         File fileName = newOne.saveCommit();
-        String a = sha1(readContentsAsString(fileName));
-        HEAD = a;
-        currentBranch.attachTo(a);
-        commitTree.put(a, newOne);
-        currentBranch.saveBranch(join(BRANCH_PATH, currentBranch.getName()));
+        String hashing = sha1(readContentsAsString(fileName));
+        commitTree.put(hashing, newOne);
+        updateBranch(hashing);
+    }
+
+    public static void updateBranch(String hashing) {
+        Branches.put(currentBranch, hashing);
+        HEAD = hashing;
     }
 }
