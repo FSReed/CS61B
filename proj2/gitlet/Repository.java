@@ -160,6 +160,8 @@ public class Repository {
             }
             commit.snapshots.put(fileName, hashing);
         }
+        /* Clear the staging area after commit */
+        writeObject(STAGED, new TreeMap<>());
     }
     /* ------------End of helper function for commit-------------------------*/
 
