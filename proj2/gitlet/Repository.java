@@ -83,7 +83,6 @@ public class Repository {
      */
     public static void commit(String s) throws IOException {
         String parentCommit = readContentsAsString(HEAD);
-        System.out.println(parentCommit);
         Commit newOne = new Commit(s, parentCommit);
         String hashing = newOne.saveCommit();
         commitTree.put(hashing, newOne);
@@ -109,6 +108,26 @@ public class Repository {
         return true;
     }
 
+    /** Output the gitlet log */
+    public static void log() {
+        String hashing = readContentsAsString(HEAD);
+        Commit currentCommit = findCommit(hashing);
+        while(currentCommit != null) {
+            printCommit(currentCommit, hashing);
+            hashing = currentCommit.getParent();
+            currentCommit = findCommit(hashing);
+        }
+    }
+
+    /** Print one commit */
+    private static void printCommit(Commit commit, String SHA1) {
+        System.out.println("===");
+        System.out.println("commit" + " " + SHA1);
+        System.out.println("Date:" + " " + commit.getTimeStamp());
+        System.out.println(commit.getMessage());
+        System.out.println();
+    }
+
     /** Compare the content of the current file to the content in the previous commit */
     private static boolean compareWithPrevFile(String fileName) {
         return true;
@@ -120,11 +139,12 @@ public class Repository {
         String crtBranch = readContentsAsString(CURRENT_BRANCH);
         branchTree = readObject(BRANCH_TREE, HashMap.class);
         branchTree.put(crtBranch, hashing);
-        writeObject(BRANCH_TREE, HashMap.class);
+        writeObject(BRANCH_TREE, branchTree);
     }
 
     /** Given a sha1 code, return the commit it represents */
     public static Commit findCommit(String SHA1) {
-        return null;
+        commitTree = readObject(COMMIT_TREE, HashMap.class);
+        return commitTree.get(SHA1);
     }
 }

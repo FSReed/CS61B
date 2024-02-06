@@ -84,6 +84,19 @@ public class Commit implements Serializable {
         return fileName;
     }
 
+    /** Get the message of this current one */
+    public String getMessage() {
+        return this.message;
+    }
+    /** Get the time stamp of this current one */
+    public String getTimeStamp() {
+        return this.timeStamp;
+    }
+    /** Get the parent commit of this current one */
+    public String getParent() {
+        return this.parentCommit;
+    }
+
     /** Given a file name, return whether this commit is tracking this file */
     public String getContent(String fileName) {
         return this.snapshots.get(fileName);

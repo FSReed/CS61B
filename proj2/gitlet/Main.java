@@ -19,7 +19,7 @@ public class Main {
         switch(firstArg) {
             case "init":
                 // TD: handle the `init` command
-                if (Repository.GITLET_DIR.exists()) {
+                if (repoExists()) {
                     exitWithMessage(initialError);
                 }
                 Repository.initializeRepo();
@@ -28,7 +28,19 @@ public class Main {
                 // TODO: handle the `add [filename]` command
                 break;
             // TODO: FILL THE REST IN
+            case "log":
+                if (!repoExists()) {
+                    exitWithMessage(repoError);
+                }
+                Repository.log();
+                break;
+            /*Just for test */
+            case "commit":
+                String message = args[1];
+                Repository.commit(message);
+                break;
         }
+        System.out.println("End of procedure.");
     }
 
     private static void exitWithMessage(String s) {
@@ -37,15 +49,18 @@ public class Main {
     }
 
     /** Check the input operands */
-    private static void sanityCheck(String[] args, int length) {
+    private static void sanityParamCheck(String[] args, int length) {
         if (args.length != length) {
             exitWithMessage("Incorrect operands.");
         }
-        if (!Repository.GITLET_DIR.exists()) {
-            exitWithMessage("Not in an initialized Gitlet directory.");
-        }
     }
 
+    /** Check the existence of the repo */
+    private static boolean repoExists() {
+        return Repository.GITLET_DIR.exists();
+    }
     private static final String initialError =
             "A Gitlet version-control system already exists in the current directory.";
+    private static final String repoError =
+            "Not in an initialized Gitlet directory.";
 }
