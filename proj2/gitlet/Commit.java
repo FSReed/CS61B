@@ -4,10 +4,7 @@ package gitlet;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Date; // TD: You'll likely use this in this class
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.*;
 import java.io.File;
 
 /** Represents a gitlet commit object.
@@ -27,18 +24,18 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    private String message;
+    public String message;
 
     /** The timestamp of this Commit. */
-    private String timeStamp;
+    public String timeStamp;
 
     /** TODO: The files that has been changed in this Commit.
      * The mapping of name -> sha1 of the blob
      */
-    private HashMap<String, String> snapshots;
+    public TreeMap<String, String> snapshots;
 
     /** The parent commit, represented using hash code */
-    private String parentCommit;
+    public String parentCommit;
 
     /* TODO: fill in the rest of this class. */
 
@@ -49,8 +46,7 @@ public class Commit implements Serializable {
         this.message = m;
         this.timeStamp = getTime(Locale.US);
         this.parentCommit = parentHash;
-        this.snapshots = new HashMap<>();
-        copySnapshot(this.parentCommit);
+        this.snapshots = new TreeMap<>();
     }
 
     /** Helper Function for getting the date for this commit */
@@ -59,46 +55,5 @@ public class Commit implements Serializable {
         Formatter formatter = new Formatter(L);
         formatter.format("%1$ta %1$tb %1$td %1$tT %1$tY %1$tz", current);
         return formatter.toString();
-    }
-    /** Helper Function for copying the snapshot of its parent */
-    private void copySnapshot(String parentCommit) {
-        if (parentCommit.isEmpty()) {
-            return;
-        }
-        Commit parent = Repository.findCommit(parentCommit);
-        this.snapshots.putAll(parent.snapshots);
-    }
-
-    /** Save the commit into .gitlet/commits and return its name */
-    public String saveCommit() throws IOException {
-        String result = this.message
-                        + this.timeStamp
-                        + this.snapshots.toString()
-                        + this.parentCommit;
-        String fileName = Utils.sha1(result);
-        File tmp = Utils.join(Repository.COMMIT_PATH, fileName);
-        if (!tmp.exists()) {
-            Utils.writeObject(tmp, this);
-            tmp.createNewFile();
-        }
-        return fileName;
-    }
-
-    /** Get the message of this current one */
-    public String getMessage() {
-        return this.message;
-    }
-    /** Get the time stamp of this current one */
-    public String getTimeStamp() {
-        return this.timeStamp;
-    }
-    /** Get the parent commit of this current one */
-    public String getParent() {
-        return this.parentCommit;
-    }
-
-    /** Given a file name, return whether this commit is tracking this file */
-    public String getContent(String fileName) {
-        return this.snapshots.get(fileName);
     }
 }

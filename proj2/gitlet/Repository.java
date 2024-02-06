@@ -3,6 +3,8 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -18,7 +20,7 @@ import static gitlet.Utils.*;
  *          .gitlet/        -- top level of folder for all persistent data
  *          - commits/      -- stores all the commits
  *          - blobs/        -- stores all the blobs
- *          - stage/        -- stores the adding of the next commit
+ *          - STAGED Files  -- stores the snapshot of files to be committed
  *          - branches      -- stores the information of branches
  *            - HEAD        -- stores the HEAD commit
  *            - Current     -- stores the current branch of the repo
@@ -27,7 +29,7 @@ import static gitlet.Utils.*;
  */
 public class Repository {
     /**
-     * TODO: add instance variables here.
+     * TD: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -42,8 +44,8 @@ public class Repository {
     public static final File COMMIT_PATH = join(GITLET_DIR, "commits");
     /** The blob directory */
     public static final File BLOB_PATH = join(GITLET_DIR, "blobs");
-    /** The staging directory */
-    public static final File STAGING_PATH = join(GITLET_DIR, "stage");
+    /** The snapshot map inside the Staging Area */
+    public static final File STAGED = join(GITLET_DIR, "Staged Files");
     /** The branches of the repo. */
     public static final File BRANCH_PATH = join(GITLET_DIR, "branches");
     /** The HEAD of the repo */
@@ -51,13 +53,13 @@ public class Repository {
     /** The current branch of the repo */
     public static final File CURRENT_BRANCH = join(BRANCH_PATH, "Current");
     /** Use hashmap to store the branches
-     * The mapping is: branch name -> sha1 code of the commit
+     * The mapping is: branch name(String) -> sha1 code of the commit(String)
      */
-    public static HashMap<String, String> branchTree = new HashMap<>();
     public static final File BRANCH_TREE = join(BRANCH_PATH, "BRANCH_TREE");
 
-    /** The commit tree of the repo */
-    public static HashMap<String, Commit> commitTree = new HashMap<>();
+    /** Use hashmap to store the commits
+     * The mapping is: sha1 code of the commit(String) -> commit(Commit)
+     */
     public static final File COMMIT_TREE = join(GITLET_DIR, "COMMIT_TREE");
 
 
@@ -68,12 +70,19 @@ public class Repository {
         GITLET_DIR.mkdir();
         COMMIT_PATH.mkdir();
         BRANCH_PATH.mkdir();
+        BLOB_PATH.mkdir();
         HEAD.createNewFile();
+        /* Make sure there will always be a map in the BRANCH_TREE */
+        writeObject(BRANCH_TREE, new HashMap<>());
         BRANCH_TREE.createNewFile();
+        /* Make sure there will always be a treemap of snapshots in the Staging Area */
+        writeObject(STAGED, new TreeMap<>());
+        STAGED.createNewFile();
+        /* Make sure there will always be a map in the COMMIT_TREE */
+        writeObject(COMMIT_TREE, new HashMap<>());
         COMMIT_TREE.createNewFile();
         /* Create the master branch */
         writeContents(CURRENT_BRANCH, "master");
-        writeObject(BRANCH_TREE, branchTree);
         commit("initial commit");
     }
 
@@ -84,29 +93,105 @@ public class Repository {
     public static void commit(String s) throws IOException {
         String parentCommit = readContentsAsString(HEAD);
         Commit newOne = new Commit(s, parentCommit);
-        String hashing = newOne.saveCommit();
-        commitTree.put(hashing, newOne);
-        writeObject(COMMIT_TREE, commitTree);
+        copySnapshotFromParent(newOne);
+        clearStagingArea(newOne);
+        String hashing = saveCommit(newOne);
+        addToCommitTree(hashing, newOne);
         updateBranchAfterCommit(hashing);
     }
 
+    /** Helper Function for copying the snapshot of its parent */
+    private static void copySnapshotFromParent(Commit commit) {
+        Commit parentCommit = findCommit(commit.parentCommit);
+        if (parentCommit == null) {
+            return;
+        }
+        commit.snapshots.putAll(parentCommit.snapshots);
+    }
+
+    /** Add a commit to the commit tree */
+    private static void addToCommitTree(String hashing, Commit commit) {
+        HashMap<String, Commit> tmp = readObject(COMMIT_TREE, HashMap.class);
+        tmp.put(hashing, commit);
+        writeObject(COMMIT_TREE, tmp);
+    }
+
+    /** Save the commit into .gitlet/commits and return its name */
+    private static String saveCommit(Commit commit) throws IOException {
+        String result = commit.message
+                + commit.timeStamp
+                + commit.snapshots.toString()
+                + commit.parentCommit;
+        String fileName = Utils.sha1(result);
+        File tmp = Utils.join(Repository.COMMIT_PATH, fileName);
+        if (!tmp.exists()) {
+            Utils.writeObject(tmp, commit);
+            tmp.createNewFile();
+        }
+        return fileName;
+    }
+
+    /** Update the branch after a commit */
+    private static void updateBranchAfterCommit(String hashing) {
+        writeContents(HEAD, hashing);
+        String crtBranch = readContentsAsString(CURRENT_BRANCH);
+        HashMap<String, String> tmp = readObject(BRANCH_TREE, HashMap.class);
+        tmp.put(crtBranch, hashing);
+        writeObject(BRANCH_TREE, tmp);
+    }
+
+    /** Given a sha1 code, return the commit it represents */
+    private static Commit findCommit(String SHA1) {
+        HashMap<String, Commit> tmp = readObject(COMMIT_TREE, HashMap.class);
+        return tmp.get(SHA1); // Can be null.
+    }
+
+    /** Create Blobs and update the commit */
+    private static void clearStagingArea(Commit commit) throws IOException{
+        TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
+        for(Map.Entry<String, String> entry: tmp.entrySet()) {
+            String fileName = entry.getKey();
+            String content = entry.getValue();
+            String hashing = sha1(content);
+            File blob = join(BLOB_PATH, hashing);
+            if (!blob.exists()) {
+                blob.createNewFile();
+                writeContents(blob, content);
+            }
+            commit.snapshots.put(fileName, hashing);
+        }
+    }
+    /* ------------End of helper function for commit-------------------------*/
+
     /** Add a file to the staging area */
-    public static boolean add(String fileName) throws IOException{
+    public static boolean addToStagingArea(String fileName) throws IOException{
         File currentFile = join(CWD, fileName);
         if (!currentFile.exists()) {
             return false;
         }
-        boolean needToUpdate = compareWithPrevFile(fileName);
-        if (needToUpdate) {
-            // TODO: Update
-            String content = readContentsAsString(currentFile);
-            String SHA1Code = sha1(content);
-            File newBlob = join(BLOB_PATH, SHA1Code);
-            writeContents(newBlob, content);
-            return newBlob.createNewFile();
-        }
+        updateFileContent(fileName);
         return true;
     }
+
+    /** Compare the content of the current file to the content in the previous commit.
+     *  The previous commit is the commit pointed by HEAD.
+     */
+    private static void updateFileContent(String fileName) throws IOException{
+        Commit prevCommit = findCommit(readContentsAsString(HEAD)); // Constant
+        TreeMap<String, String> fileList = prevCommit.snapshots;
+        String blobHash = fileList.get(fileName); // log(N). Can be null.
+        File currentFile = join(CWD, fileName);
+        String contentInFile = readContentsAsString(currentFile);
+        String newBlobHash = sha1(contentInFile); // Won't be null.
+        TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
+        if (newBlobHash.equals(blobHash)) {
+            tmp.remove(fileName); // The only case we won't stage the file
+        } else {
+            tmp.put(fileName, contentInFile);
+        }
+        writeObject(STAGED, tmp);
+    }
+    /* ------------End of helper function for addToStagingArea---------------*/
 
     /** Output the gitlet log */
     public static void log() {
@@ -114,7 +199,7 @@ public class Repository {
         Commit currentCommit = findCommit(hashing);
         while(currentCommit != null) {
             printCommit(currentCommit, hashing);
-            hashing = currentCommit.getParent();
+            hashing = currentCommit.parentCommit;
             currentCommit = findCommit(hashing);
         }
     }
@@ -123,28 +208,8 @@ public class Repository {
     private static void printCommit(Commit commit, String SHA1) {
         System.out.println("===");
         System.out.println("commit" + " " + SHA1);
-        System.out.println("Date:" + " " + commit.getTimeStamp());
-        System.out.println(commit.getMessage());
+        System.out.println("Date:" + " " + commit.timeStamp);
+        System.out.println(commit.message);
         System.out.println();
-    }
-
-    /** Compare the content of the current file to the content in the previous commit */
-    private static boolean compareWithPrevFile(String fileName) {
-        return true;
-    }
-
-    /** Update the branch after a commit */
-    public static void updateBranchAfterCommit(String hashing) {
-        writeContents(HEAD, hashing);
-        String crtBranch = readContentsAsString(CURRENT_BRANCH);
-        branchTree = readObject(BRANCH_TREE, HashMap.class);
-        branchTree.put(crtBranch, hashing);
-        writeObject(BRANCH_TREE, branchTree);
-    }
-
-    /** Given a sha1 code, return the commit it represents */
-    public static Commit findCommit(String SHA1) {
-        commitTree = readObject(COMMIT_TREE, HashMap.class);
-        return commitTree.get(SHA1);
     }
 }
