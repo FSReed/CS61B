@@ -45,16 +45,25 @@ public class Commit implements Serializable {
      */
     public Commit(String m, String parentHash) {
         this.message = m;
-        this.timeStamp = getTime(Locale.US);
+        this.timeStamp = getTime();
         this.parentCommit = parentHash;
         this.snapshots = new TreeMap<>();
     }
 
     /** Helper Function for getting the date for this commit */
-    private String getTime(Locale L) {
+    private String getTime() {
         Date current = new Date();
-        Formatter formatter = new Formatter(L);
+        Formatter formatter = new Formatter(Locale.US);
         formatter.format("%1$ta %1$tb %1$td %1$tT %1$tY %1$tz", current);
         return formatter.toString();
+    }
+
+    public static Commit createInitialCommit() {
+        Commit tmp = new Commit("initial commit", "");
+        Date epoch = new Date(0);
+        Formatter formatter = new Formatter(Locale.US);
+        formatter.format("%1$ta %1$tb %1$td %1$tT %1$tY %1$tz", epoch);
+        tmp.timeStamp = formatter.toString();
+        return tmp;
     }
 }

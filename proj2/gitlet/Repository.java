@@ -83,7 +83,15 @@ public class Repository {
         COMMIT_TREE.createNewFile();
         /* Create the master branch */
         writeContents(CURRENT_BRANCH, "master");
-        commit("initial commit");
+        initialCommit();
+    }
+
+    /** Helper function for creating a initial commit */
+    private static void initialCommit() throws IOException{
+        Commit tmp = Commit.createInitialCommit();
+        String initialHash = saveCommit(tmp);
+        addToCommitTree(initialHash, tmp);
+        updateBranchAfterCommit(initialHash);
     }
 
     /** Make a commit with message s.
