@@ -20,8 +20,8 @@ import static gitlet.Utils.*;
  *          .gitlet/        -- top level of folder for all persistent data
  *          - commits/      -- stores all the commits
  *          - blobs/        -- stores all the blobs
- *          - STAGED Files  -- stores the snapshot of files to be committed
- *          - branches      -- stores the information of branches
+ *          - Staged Files  -- stores the snapshot of files to be committed
+ *          - branches/     -- stores the information of branches
  *            - HEAD        -- stores the HEAD commit
  *            - Current     -- stores the current branch of the repo
  *            - BRANCH_TREE -- stores all the branches and its corresponding commit
@@ -122,10 +122,10 @@ public class Repository {
                 + commit.timeStamp
                 + commit.snapshots.toString()
                 + commit.parentCommit;
-        String fileName = Utils.sha1(result);
-        File tmp = Utils.join(Repository.COMMIT_PATH, fileName);
+        String fileName = sha1(result);
+        File tmp = join(Repository.COMMIT_PATH, fileName);
         if (!tmp.exists()) {
-            Utils.writeObject(tmp, commit);
+            writeObject(tmp, commit);
             tmp.createNewFile();
         }
         return fileName;

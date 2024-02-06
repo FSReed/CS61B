@@ -1,11 +1,12 @@
 package gitlet;
 
-// TODO: any imports you need here
+// TD: any imports you need here
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
-import java.io.File;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.Locale;
+import java.util.TreeMap;
 
 /** Represents a gitlet commit object.
  *  TD: It's a good idea to give a description here of what else this Class
@@ -29,8 +30,8 @@ public class Commit implements Serializable {
     /** The timestamp of this Commit. */
     public String timeStamp;
 
-    /** TODO: The files that has been changed in this Commit.
-     * The mapping of name -> sha1 of the blob
+    /** The files that has been changed in this Commit.
+     *  The mapping of file name -> sha1 of the blob
      */
     public TreeMap<String, String> snapshots;
 
