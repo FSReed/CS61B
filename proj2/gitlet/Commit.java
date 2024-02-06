@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date; // TD: You'll likely use this in this class
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.Locale;
 import java.io.File;
 
@@ -31,7 +32,10 @@ public class Commit implements Serializable {
     /** The timestamp of this Commit. */
     private String timeStamp;
 
-    /** TODO: The files that has been changed in this Commit. */
+    /** TODO: The files that has been changed in this Commit.
+     * The mapping of name -> sha1 of the blob
+     */
+    private HashMap<String, String> snapshots;
 
     /** The parent commit, represented using hash code */
     private String parentCommit;
@@ -45,6 +49,8 @@ public class Commit implements Serializable {
         this.message = m;
         this.timeStamp = getTime(Locale.US);
         this.parentCommit = parentHash;
+        this.snapshots = new HashMap<>();
+        copySnapshot(this.parentCommit);
     }
 
     /** Helper Function for getting the date for this commit */
@@ -54,15 +60,32 @@ public class Commit implements Serializable {
         formatter.format("%1$ta %1$tb %1$td %1$tT %1$tY %1$tz", current);
         return formatter.toString();
     }
+    /** Helper Function for copying the snapshot of its parent */
+    private void copySnapshot(String parentCommit) {
+        if (parentCommit.isEmpty()) {
+            return;
+        }
+        Commit parent = Repository.findCommit(parentCommit);
+        this.snapshots.putAll(parent.snapshots);
+    }
 
-    public File saveCommit() throws IOException {
-        int hashing= this.hashCode();
-        String fileName = Integer.toString(hashing);
+    /** Save the commit into .gitlet/commits and return its name */
+    public String saveCommit() throws IOException {
+        String result = this.message
+                        + this.timeStamp
+                        + this.snapshots.toString()
+                        + this.parentCommit;
+        String fileName = Utils.sha1(result);
         File tmp = Utils.join(Repository.COMMIT_PATH, fileName);
         if (!tmp.exists()) {
             Utils.writeObject(tmp, this);
             tmp.createNewFile();
         }
-        return tmp;
+        return fileName;
+    }
+
+    /** Given a file name, return whether this commit is tracking this file */
+    public String getContent(String fileName) {
+        return this.snapshots.get(fileName);
     }
 }

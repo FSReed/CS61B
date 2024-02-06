@@ -23,7 +23,6 @@ public class Main {
                     exitWithMessage(initialError);
                 }
                 Repository.initializeRepo();
-                Repository.commit("initial commit");
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
@@ -35,6 +34,16 @@ public class Main {
     private static void exitWithMessage(String s) {
         System.out.println(s);
         System.exit(0);
+    }
+
+    /** Check the input operands */
+    private static void sanityCheck(String[] args, int length) {
+        if (args.length != length) {
+            exitWithMessage("Incorrect operands.");
+        }
+        if (!Repository.GITLET_DIR.exists()) {
+            exitWithMessage("Not in an initialized Gitlet directory.");
+        }
     }
 
     private static final String initialError =
