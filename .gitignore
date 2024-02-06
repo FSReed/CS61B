@@ -6,7 +6,7 @@
 !**/pom.xml
 !.fatweleminus
 !.gitignore
-!README.md
+!*.md
 !*.drawio
 !library-sp21
 !foods.csv
