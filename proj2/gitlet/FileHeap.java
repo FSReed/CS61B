@@ -37,6 +37,10 @@ public class FileHeap {
         }
     }
 
+    public boolean isEmpty() {
+        return this.size > 0;
+    }
+
     private void resize() {
         int currentPlace = 1;
         String target = fileNames[1];

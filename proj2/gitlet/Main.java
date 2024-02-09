@@ -67,6 +67,24 @@ public class Main {
                 Repository.status();
                 break;
             case "checkout":
+                paramCheck(args, 4);
+                switch (args.length) {
+                    /* checkout [branch name](args[1]) */
+                    case 2:
+                        int exitCode0 = Repository.checkoutToBranch(args[1]);
+                        checkoutErrorCodeProcess(exitCode0);
+                        break;
+                    /* checkout -- [file name](args[2]) */
+                    case 3:
+                        int exitCode1 = Repository.checkoutOneFileToHEAD(args[2]);
+                        checkoutErrorCodeProcess(exitCode1);
+                        break;
+                    /* checkout [commit id](args[1]) -- [file name](args[3]) */
+                    case 4:
+                        int exitCode2 = Repository.checkoutOneFileToCommit(args[1], args[3]);
+                        checkoutErrorCodeProcess(exitCode2);
+                        break;
+                }
                 break;
             case "branch":
                 break;
@@ -90,7 +108,7 @@ public class Main {
 
     /** Check the input operands */
     private static void paramCheck(String[] args, int length) {
-        if (args.length != length) {
+        if (args.length < length) {
             exitWithMessage(paramError);
         }
     }
@@ -100,6 +118,23 @@ public class Main {
         return Repository.GITLET_DIR.exists();
     }
 
+    /** Perform according to the exit code of checkout */
+    private static void checkoutErrorCodeProcess(int exitCode) {
+        switch(exitCode) {
+            case Repository.CHECKOUT_NO_COMMIT:
+                exitWithMessage(noCommitError);
+            case Repository.CHECKOUT_NO_FILE_IN_COMMIT:
+                exitWithMessage(noFileInCommitError);
+            case Repository.CHECKOUT_NO_BRANCH_EXISTS:
+                exitWithMessage(noBranchError);
+            case Repository.CHECKOUT_SAME_BRANCH:
+                exitWithMessage(sameBranchError);
+            case Repository.CHECKOUT_UNTRACKED_FILE:
+                exitWithMessage(untrackedFileError);
+            case Repository.CHECKOUT_SUCCESS:
+                System.exit(0);
+        }
+    }
     /** All error messages */
     private static final String noInputError =
             "Please enter a command.";
@@ -115,4 +150,14 @@ public class Main {
             "No reason to remove the file.";
     private static final String noFitMessageError =
             "Found no commit with that message.";
+    private static final String noCommitError =
+            "No commit with that id exists.";
+    private static final String noFileInCommitError =
+            "File does not exist in that commit.";
+    private static final String noBranchError =
+            "No such branch exists.";
+    private static final String sameBranchError =
+            "No need to checkout the current branch.";
+    private static final String untrackedFileError =
+            "There is an untracked file in the way; delete it, or add and commit it first.";
 }

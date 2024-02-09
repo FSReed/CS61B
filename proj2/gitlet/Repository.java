@@ -3,9 +3,9 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -63,6 +63,15 @@ public class Repository {
      */
     public static final File COMMIT_TREE = join(GITLET_DIR, "COMMIT_TREE");
 
+    /** Status code for checkout a file */
+    public static final int CHECKOUT_SUCCESS = 0;
+    public static final int CHECKOUT_NO_COMMIT = 1;
+    public static final int CHECKOUT_NO_FILE_IN_COMMIT = 2;
+
+    /** Status code for checout to a branch */
+    public static final int CHECKOUT_NO_BRANCH_EXISTS = 3;
+    public static final int CHECKOUT_SAME_BRANCH = 4;
+    public static final int CHECKOUT_UNTRACKED_FILE = 5;
 
     /* TODO: fill in the rest of this class. */
 
@@ -313,6 +322,108 @@ public class Repository {
     private static void printExtra() {
 
     }
+
+    private static FileHeap findUntrackedFiles() {
+        List<String> allFile = plainFilenamesIn(CWD);
+        if (allFile == null) {
+            return new FileHeap(0); // An Empty Heap.
+        }
+        FileHeap untrackedFiles = new FileHeap(allFile.size());
+        String headHash = readContentsAsString(HEAD);
+        Commit headCommit = findCommit(headHash);
+        for (String fileName: allFile) {
+            if (!headCommit.snapshots.containsKey(fileName)) {
+                untrackedFiles.add(fileName);
+            }
+        }
+        return untrackedFiles;
+    }
+    /* ------------End of helper function for status-------------------------*/
+
+    /** gitlet checkout */
+    public static int checkoutOneFileToCommit(String commitID, String fileName) {
+        if (commitID.length() < 40) {
+            commitID = findFullCommitID(commitID);
+        }
+        Commit targetCommit = findCommit(commitID);
+        if (targetCommit == null) {
+            return CHECKOUT_NO_COMMIT;
+        }
+        if (!targetCommit.snapshots.containsKey(fileName)) {
+            return CHECKOUT_NO_FILE_IN_COMMIT;
+        }
+        File targetFile = join(CWD, fileName);
+        String contentInFile = targetCommit.snapshots.get(commitID); // Get SHA1 of content.
+        writeContents(targetFile, contentInFile);
+        return CHECKOUT_SUCCESS;
+    }
+
+    public static int checkoutOneFileToHEAD(String fileName) {
+        String currentCommitID = readContentsAsString(HEAD);
+        return checkoutOneFileToCommit(currentCommitID, fileName);
+    }
+
+    public static int checkoutToBranch(String branchName) throws IOException{
+        TreeMap<String, String> branchTree = readObject(BRANCH_TREE, TreeMap.class);
+        String currentBranch = readContentsAsString(CURRENT_BRANCH);
+        if (!branchTree.containsKey(branchName)) {
+            return CHECKOUT_NO_BRANCH_EXISTS;
+        }
+        if (branchName.equals(currentBranch)) {
+            return CHECKOUT_SAME_BRANCH;
+        }
+        FileHeap untrackedFiles = findUntrackedFiles();
+        if (!untrackedFiles.isEmpty()) {
+            return CHECKOUT_UNTRACKED_FILE;
+        }
+        /* TODO: Checkout to a branch */
+        String targetHash = branchTree.get(branchName);
+        Commit targetCommit = findCommit(targetHash);
+        writeContents(CURRENT_BRANCH, branchName); // Change current branch
+        writeContents(HEAD, targetHash); // Change HEAD Commit
+        deleteAndModify(targetCommit);
+        return CHECKOUT_SUCCESS;
+    }
+
+    /** Delete the files in the working space which are not tracked in a commit
+     *  Then Modify the files in the commit
+     */
+    private static void deleteAndModify(Commit commit) throws IOException{
+        List<String> fileList = plainFilenamesIn(CWD);
+        /* Delete untracked files */
+        assert fileList != null;
+        for (String fileName: fileList) {
+            if (!commit.snapshots.containsKey(fileName)) {
+                File tmp = join(CWD, fileName);
+                restrictedDelete(tmp);
+            }
+        }
+        /* Modify tracked files */
+        for (Map.Entry<String, String> entry: commit.snapshots.entrySet()) {
+            String fileName = entry.getKey();
+            String blobHash = entry.getValue();
+            File targetFile = join(CWD, fileName);
+            if (!targetFile.exists()) {
+                targetFile.createNewFile();
+            }
+            String content = readContentsAsString(join(BLOB_PATH, blobHash));
+            writeContents(targetFile, content);
+        }
+    }
+    /** Return the FullID of a shortID. If no such ID exists, return null. */
+    private static String findFullCommitID(String shortID) {
+        int IDLength = shortID.length();
+        List<String> commitList = plainFilenamesIn(COMMIT_PATH);
+        assert commitList != null;
+        for (String fullID: commitList) {
+            String tmp = fullID.substring(0, IDLength);
+            if (tmp.equals(shortID)) {
+                return fullID;
+            }
+        }
+        return null;
+    }
+    /* ------------End of helper function for checkout-----------------------*/
 
     public static void test() {
     }
