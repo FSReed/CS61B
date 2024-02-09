@@ -341,7 +341,7 @@ public class Repository {
     /* ------------End of helper function for status-------------------------*/
 
     /** gitlet checkout */
-    public static int checkoutOneFileToCommit(String commitID, String fileName) {
+    public static int checkoutOneFileToCommit(String commitID, String fileName) throws IOException{
         if (commitID.length() < 40) {
             commitID = findFullCommitID(commitID);
         }
@@ -353,18 +353,22 @@ public class Repository {
             return CHECKOUT_NO_FILE_IN_COMMIT;
         }
         File targetFile = join(CWD, fileName);
-        String contentInFile = targetCommit.snapshots.get(commitID); // Get SHA1 of content.
+        if (!targetFile.exists()) {
+            targetFile.createNewFile();
+        }
+        String blobHash = targetCommit.snapshots.get(fileName); // Get SHA1 of content.
+        String contentInFile = readContentsAsString(join(BLOB_PATH, blobHash));
         writeContents(targetFile, contentInFile);
         return CHECKOUT_SUCCESS;
     }
 
-    public static int checkoutOneFileToHEAD(String fileName) {
+    public static int checkoutOneFileToHEAD(String fileName) throws IOException{
         String currentCommitID = readContentsAsString(HEAD);
         return checkoutOneFileToCommit(currentCommitID, fileName);
     }
 
     public static int checkoutToBranch(String branchName) throws IOException{
-        TreeMap<String, String> branchTree = readObject(BRANCH_TREE, TreeMap.class);
+        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
         String currentBranch = readContentsAsString(CURRENT_BRANCH);
         if (!branchTree.containsKey(branchName)) {
             return CHECKOUT_NO_BRANCH_EXISTS;

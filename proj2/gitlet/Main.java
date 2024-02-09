@@ -67,7 +67,7 @@ public class Main {
                 Repository.status();
                 break;
             case "checkout":
-                paramCheck(args, 4);
+                paramCheck(args, 2);
                 switch (args.length) {
                     /* checkout [branch name](args[1]) */
                     case 2:
