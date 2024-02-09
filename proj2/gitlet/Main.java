@@ -16,6 +16,9 @@ public class Main {
             exitWithMessage(noInputError);
         }
         String firstArg = args[0];
+        if (!firstArg.equals("init") && !repoExists()) {
+            exitWithMessage(noRepoError);
+        }
         switch(firstArg) {
             case "init":
                 // TD: handle the `init` command
@@ -25,7 +28,7 @@ public class Main {
                 Repository.initializeRepo();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                // TD: handle the `add [filename]` command
                 paramCheck(args, 2);
                 String fileName = args[1];
                 boolean success = Repository.addToStagingArea(fileName);
@@ -34,20 +37,49 @@ public class Main {
                 }
                 break;
             // TODO: FILL THE REST IN
-            case "log":
-                if (!repoExists()) {
-                    exitWithMessage(noRepoError);
-                }
-                Repository.log();
-                break;
-            /* TODO: Just for log test. Modify later */
             case "commit":
                 String message = args[1];
                 Repository.commit(message);
                 break;
+            case "rm":
+                paramCheck(args, 2);
+                String fileToRemove = args[1];
+                boolean removed = Repository.remove(fileToRemove);
+                if (!removed) {
+                    exitWithMessage(removeError);
+                }
+                break;
+            case "log":
+                Repository.log();
+                break;
+            case "global-log":
+                Repository.globalLog();
+                break;
+            case "find":
+                paramCheck(args, 2);
+                String findMessage = args[1];
+                boolean findCommitMessage = Repository.find(findMessage);
+                if (!findCommitMessage) {
+                    exitWithMessage(noFitMessageError);
+                }
+                break;
+            case "status":
+                Repository.status();
+                break;
+            case "checkout":
+                break;
+            case "branch":
+                break;
+            case "rm-branch":
+                break;
+            case "reset":
+                break;
+            case "merge":
+                break;
             case "test":
-                System.out.println(Utils.sha1(""));
+                /* TODO: Test something here */
         }
+        System.exit(0);
     }
 
     private static void exitWithMessage(String s) {
@@ -78,4 +110,8 @@ public class Main {
             "Incorrect operands.";
     private static final String noFileError =
             "File does not exist.";
+    private static final String removeError =
+            "No reason to remove the file.";
+    private static final String noFitMessageError =
+            "Found no commit with that message.";
 }

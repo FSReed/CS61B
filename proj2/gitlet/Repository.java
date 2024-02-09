@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -160,6 +161,10 @@ public class Repository {
         for(Map.Entry<String, String> entry: tmp.entrySet()) {
             String fileName = entry.getKey();
             String content = entry.getValue();
+            if (content == null) {
+                commit.snapshots.remove(fileName);
+                continue;
+            }
             String hashing = sha1(content);
             File blob = join(BLOB_PATH, hashing);
             if (!blob.exists()) {
@@ -203,6 +208,23 @@ public class Repository {
     }
     /* ------------End of helper function for addToStagingArea---------------*/
 
+    /** gitlet rm */
+    public static boolean remove(String fileName) {
+        TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
+        String staged = tmp.remove(fileName);
+        Commit prevCommit = findCommit(readContentsAsString(HEAD));
+        boolean tracked = prevCommit.snapshots.containsKey(fileName);
+        if (tracked) {
+            File target = join(CWD, fileName);
+            if (target.exists()) {
+                restrictedDelete(target);
+            }
+            tmp.put(fileName, null);
+        }
+        writeObject(STAGED, tmp);
+        return staged != null || tracked;
+    }
+
     /** Output the gitlet log */
     public static void log() {
         String hashing = readContentsAsString(HEAD);
@@ -214,6 +236,14 @@ public class Repository {
         }
     }
 
+    public static void globalLog() {
+        List<String> allCommit = plainFilenamesIn(COMMIT_PATH);
+        assert allCommit != null;
+        for (String commitID: allCommit) {
+            Commit currentCommit = findCommit(commitID);
+            printCommit(currentCommit, commitID);
+        }
+    }
     /** Print one commit */
     private static void printCommit(Commit commit, String SHA1) {
         System.out.println("===");
@@ -221,5 +251,49 @@ public class Repository {
         System.out.println("Date:" + " " + commit.timeStamp);
         System.out.println(commit.message);
         System.out.println();
+    }
+    /* ------------End of helper function for logs---------------------------*/
+
+    /** gitlet find */
+    public static boolean find(String targetMessage) {
+        boolean result = false;
+        List<String> allCommits = plainFilenamesIn(GITLET_DIR);
+        assert allCommits != null;
+        for(String commitID: allCommits) {
+            Commit current = findCommit(commitID);
+            if (current.message.equals(targetMessage)) {
+                result = true;
+                System.out.println(commitID);
+            }
+        }
+        return result;
+    }
+    /* ------------End of helper function for find---------------------------*/
+
+    /** gitlet status */
+    public static void status() {
+        printBranchState();
+        printStagingArea();
+        printExtra();
+    }
+
+    private static void printBranchState() {
+        System.out.println("=== Branches ===");
+        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        FileHeap heap = new FileHeap(branchTree.size());
+        for(String branchName: branchTree.keySet()) {
+            heap.add(branchName);
+        }
+        String currentBranch = readContentsAsString(CURRENT_BRANCH);
+        heap.printBranches(currentBranch);
+        System.out.println();
+    }
+
+    private static void printStagingArea() {
+        TreeMap<String, String> stagingArea = readObject(STAGED, TreeMap.class);
+    }
+
+    private static void printExtra() {
+
     }
 }

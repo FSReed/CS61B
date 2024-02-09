@@ -41,7 +41,6 @@ public class Commit implements Serializable {
     /* TODO: fill in the rest of this class. */
 
     /** The Constructor
-     * TODO: Add the files to commit
      */
     public Commit(String m, String parentHash) {
         this.message = m;
