@@ -257,7 +257,7 @@ public class Repository {
     /** gitlet find */
     public static boolean find(String targetMessage) {
         boolean result = false;
-        List<String> allCommits = plainFilenamesIn(GITLET_DIR);
+        List<String> allCommits = plainFilenamesIn(COMMIT_PATH);
         assert allCommits != null;
         for (String commitID: allCommits) {
             Commit current = findCommit(commitID);
