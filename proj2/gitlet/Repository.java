@@ -68,10 +68,15 @@ public class Repository {
     public static final int CHECKOUT_NO_COMMIT = 1;
     public static final int CHECKOUT_NO_FILE_IN_COMMIT = 2;
 
-    /** Status code for checout to a branch */
+    /** Status code for checkout to a branch */
     public static final int CHECKOUT_NO_BRANCH_EXISTS = 3;
     public static final int CHECKOUT_SAME_BRANCH = 4;
     public static final int CHECKOUT_UNTRACKED_FILE = 5;
+
+    /** Status code for rm-branch */
+    public static final int RM_SUCCESS = 0;
+    public static final int RM_CURRENT_BRANCH = 1;
+    public static final int RM_NO_SUCH_BRANCH = 2;
 
     /* TODO: fill in the rest of this class. */
 
@@ -108,14 +113,18 @@ public class Repository {
      * The parent commit will be the HEAD of this repo.
      * For the first commit, its parentCommit will be null.
      */
-    public static void commit(String s) throws IOException {
+    public static boolean commit(String s) throws IOException {
         String parentCommit = readContentsAsString(HEAD);
         Commit newOne = new Commit(s, parentCommit);
         copySnapshotFromParent(newOne);
-        clearStagingArea(newOne);
+        boolean changed = clearStagingArea(newOne);
+        if (!changed) {
+            return false;
+        }
         String hashing = saveCommit(newOne);
         addToCommitTree(hashing, newOne);
         updateBranchAfterCommit(hashing);
+        return true;
     }
 
     /** Helper Function for copying the snapshot of its parent */
@@ -165,8 +174,11 @@ public class Repository {
     }
 
     /** Create Blobs and update the commit */
-    private static void clearStagingArea(Commit commit) throws IOException{
+    private static boolean clearStagingArea(Commit commit) throws IOException{
         TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
+        if (tmp.isEmpty()) {
+            return false;
+        }
         for (Map.Entry<String, String> entry: tmp.entrySet()) {
             String fileName = entry.getKey();
             String content = entry.getValue();
@@ -184,6 +196,7 @@ public class Repository {
         }
         /* Clear the staging area after commit */
         writeObject(STAGED, new TreeMap<>());
+        return true;
     }
     /* ------------End of helper function for commit-------------------------*/
 
@@ -320,7 +333,10 @@ public class Repository {
     }
 
     private static void printExtra() {
-
+        System.out.println("=== Untracked Files ===");
+        FileHeap tmp = findUntrackedFiles();
+        tmp.printWithTarget("");
+        System.out.println();
     }
 
     private static FileHeap findUntrackedFiles() {
@@ -331,8 +347,10 @@ public class Repository {
         FileHeap untrackedFiles = new FileHeap(allFile.size());
         String headHash = readContentsAsString(HEAD);
         Commit headCommit = findCommit(headHash);
+        TreeMap<String, String> stagingArea = readObject(STAGED, TreeMap.class);
         for (String fileName: allFile) {
-            if (!headCommit.snapshots.containsKey(fileName)) {
+            if (!headCommit.snapshots.containsKey(fileName)
+                    && !stagingArea.containsKey(fileName)) {
                 untrackedFiles.add(fileName);
             }
         }
@@ -380,7 +398,7 @@ public class Repository {
         if (!untrackedFiles.isEmpty()) {
             return CHECKOUT_UNTRACKED_FILE;
         }
-        /* TODO: Checkout to a branch */
+        /* Checkout to a branch */
         String targetHash = branchTree.get(branchName);
         Commit targetCommit = findCommit(targetHash);
         writeContents(CURRENT_BRANCH, branchName); // Change current branch
@@ -429,6 +447,31 @@ public class Repository {
     }
     /* ------------End of helper function for checkout-----------------------*/
 
+    /** gitlet branch, rm-branch */
+    public static boolean addNewBranch(String branchName) {
+        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        if (branchTree.containsKey(branchName)) {
+            return false;
+        }
+        String headCommitHash = readContentsAsString(HEAD);
+        branchTree.put(branchName, headCommitHash);
+        writeObject(BRANCH_TREE, branchTree);
+        return true;
+    }
+
+    public static int removeBranch(String branchName) {
+        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        String currentBranch = readContentsAsString(CURRENT_BRANCH);
+        if (currentBranch.equals(branchName)) {
+            return RM_CURRENT_BRANCH;
+        }
+        if (branchTree.containsKey(branchName)) {
+            return RM_NO_SUCH_BRANCH;
+        }
+        branchTree.remove(branchName);
+        writeObject(BRANCH_TREE, branchTree);
+        return RM_SUCCESS;
+    }
     public static void test() {
     }
 }

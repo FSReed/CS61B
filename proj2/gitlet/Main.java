@@ -38,8 +38,14 @@ public class Main {
                 break;
             // TODO: FILL THE REST IN
             case "commit":
+                if (args.length < 2) {
+                    exitWithMessage(noCommitMessageError);
+                }
                 String message = args[1];
-                Repository.commit(message);
+                boolean commitSuccess = Repository.commit(message);
+                if (!commitSuccess) {
+                    exitWithMessage(noChangeError);
+                }
                 break;
             case "rm":
                 paramCheck(args, 2);
@@ -87,16 +93,25 @@ public class Main {
                 }
                 break;
             case "branch":
+                paramCheck(args, 2);
+                String branchName = args[1];
+                boolean newBranch = Repository.addNewBranch(branchName);
+                if (!newBranch) {
+                    exitWithMessage(branchAlreadyExists);
+                }
                 break;
             case "rm-branch":
+                paramCheck(args, 2);
+                String removedBranch = args[1];
+                int removeBranchCode = Repository.removeBranch(removedBranch);
+                rmbranchErrorCodeProcess(removeBranchCode);
                 break;
             case "reset":
                 break;
             case "merge":
                 break;
-            case "test":
-                /* TODO: Test something here */
-                Repository.test();
+            default:
+                exitWithMessage("Invalid operation.");
         }
         System.exit(0);
     }
@@ -135,6 +150,17 @@ public class Main {
                 System.exit(0);
         }
     }
+
+    private static void rmbranchErrorCodeProcess(int exitCode) {
+        switch(exitCode) {
+            case Repository.RM_SUCCESS:
+                System.exit(0);
+            case Repository.RM_CURRENT_BRANCH:
+                exitWithMessage(removingCurrentBranchError);
+            case Repository.RM_NO_SUCH_BRANCH:
+                exitWithMessage(noSuchBranchToRemoveError);
+        }
+    }
     /** All error messages */
     private static final String noInputError =
             "Please enter a command.";
@@ -152,6 +178,10 @@ public class Main {
             "Found no commit with that message.";
     private static final String noCommitError =
             "No commit with that id exists.";
+    private static final String noCommitMessageError =
+            "Please enter a commit message.";
+    private static final String noChangeError =
+            "No changes added to the commit.";
     private static final String noFileInCommitError =
             "File does not exist in that commit.";
     private static final String noBranchError =
@@ -160,4 +190,10 @@ public class Main {
             "No need to checkout the current branch.";
     private static final String untrackedFileError =
             "There is an untracked file in the way; delete it, or add and commit it first.";
+    private static final String branchAlreadyExists =
+            "A branch with that name already exists.";
+    private static final String noSuchBranchToRemoveError =
+            "A branch with that name does not exist.";
+    private static final String removingCurrentBranchError =
+            "Cannot remove the current branch.";
 }
