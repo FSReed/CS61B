@@ -158,7 +158,7 @@ public class Repository {
     /** Create Blobs and update the commit */
     private static void clearStagingArea(Commit commit) throws IOException{
         TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
-        for(Map.Entry<String, String> entry: tmp.entrySet()) {
+        for (Map.Entry<String, String> entry: tmp.entrySet()) {
             String fileName = entry.getKey();
             String content = entry.getValue();
             if (content == null) {
@@ -259,7 +259,7 @@ public class Repository {
         boolean result = false;
         List<String> allCommits = plainFilenamesIn(GITLET_DIR);
         assert allCommits != null;
-        for(String commitID: allCommits) {
+        for (String commitID: allCommits) {
             Commit current = findCommit(commitID);
             if (current.message.equals(targetMessage)) {
                 result = true;
@@ -281,16 +281,33 @@ public class Repository {
         System.out.println("=== Branches ===");
         HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
         FileHeap heap = new FileHeap(branchTree.size());
-        for(String branchName: branchTree.keySet()) {
+        for (String branchName: branchTree.keySet()) {
             heap.add(branchName);
         }
         String currentBranch = readContentsAsString(CURRENT_BRANCH);
-        heap.printBranches(currentBranch);
+        heap.printWithTarget(currentBranch);
         System.out.println();
     }
 
     private static void printStagingArea() {
         TreeMap<String, String> stagingArea = readObject(STAGED, TreeMap.class);
+        FileHeap stagedFiles = new FileHeap(stagingArea.size());
+        FileHeap removedFiles = new FileHeap(stagingArea.size());
+        for (Map.Entry<String, String> entry: stagingArea.entrySet()) {
+            String fileName = entry.getKey();
+            String content = entry.getValue();
+            if (content == null) {
+                removedFiles.add(fileName);
+            } else {
+                stagedFiles.add(fileName);
+            }
+        }
+        System.out.println("=== Staged Files ===");
+        stagedFiles.printWithTarget("");
+        System.out.println();
+        System.out.println("=== Removed Files ===");
+        removedFiles.printWithTarget("");
+        System.out.println();
     }
 
     private static void printExtra() {
@@ -298,12 +315,5 @@ public class Repository {
     }
 
     public static void test() {
-        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
-        branchTree.put("what about this", "3424");
-        branchTree.put("not this one", "31314a");
-        branchTree.put("xD", "3434356aq");
-        branchTree.put("hashing", "9813r13r");
-        writeObject(BRANCH_TREE, branchTree);
-        status();
     }
 }

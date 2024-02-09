@@ -24,7 +24,7 @@ public class FileHeap {
     }
 
     /** WARNING: This operation will clear the heap! */
-    public void printBranches(String currentBranch) {
+    public void printWithTarget(String currentBranch) {
         int totalSize = this.size;
         for(int i = 0; i < totalSize; i++) {
             if (fileNames[1].equals(currentBranch)) {
