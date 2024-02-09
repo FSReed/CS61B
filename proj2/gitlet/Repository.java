@@ -296,4 +296,14 @@ public class Repository {
     private static void printExtra() {
 
     }
+
+    public static void test() {
+        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        branchTree.put("what about this", "3424");
+        branchTree.put("not this one", "31314a");
+        branchTree.put("xD", "3434356aq");
+        branchTree.put("hashing", "9813r13r");
+        writeObject(BRANCH_TREE, branchTree);
+        status();
+    }
 }

@@ -78,6 +78,7 @@ public class Main {
                 break;
             case "test":
                 /* TODO: Test something here */
+                Repository.test();
         }
         System.exit(0);
     }
