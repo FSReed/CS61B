@@ -56,6 +56,21 @@
     public static final File COMMIT_TREE = join(GITLET_DIR, "COMMIT_TREE");
 ```
 
+### FileHeap
+
+#### Fields
+
+```Java
+private String[] fileNames;
+private int size;
+private final int capacity;
+
+/* Interface */
+public void add(String fileName);
+public void printWithTarget(String currentBranch);
+// Won't reuse this heap again after printing.
+```
+
 ## Structure of the repository
 
 ![design](./Design.png)
@@ -80,7 +95,10 @@
 4. Staged Filed is a `TreeMap`.
 5. `COMMIT_TREE` is a `HashMap`.
 
-## Problems I met in this project
+## Designs in this project
 
 1. I need to come up with a way to serialize **Commit**s. As all metadata one commit has can guarantee this commit is unique, so I simple add up all the attributes of one Commit into one String and SHA1 this String.
 2. When getting changed files stored in the staging area, I need to iterate over the `Staged Files`. But Java can't iterate over a TreeMap using `foreach` directly so I went to [StackOverflow](https://stackoverflow.com/questions/1318980/how-to-iterate-over-a-treemap) to find a way to implement the iteration.
+3. **Unsolved**: In `rm`, the runtime requires to be constant. But I need to search a file in the staging area and the snapshot map of the current commit. Both staging area and snapshot map use a TreeMap to store the data. Do I need to switch to HashMap?
+4. In staging area, I use a **FileName -> null** pair to represent removals.
+5. Use a class named `FileHeap` to print the entries in lexicographic order. The data structure used in this class is a **minimum-heap**.
