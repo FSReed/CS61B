@@ -121,7 +121,7 @@ public class Main {
                 paramCheck(args, 2);
                 break;
             default:
-                exitWithMessage("Invalid operation.");
+                exitWithMessage(noCommandError);
         }
         System.exit(0);
     }
@@ -217,4 +217,6 @@ public class Main {
             "A branch with that name does not exist.";
     private static final String removingCurrentBranchError =
             "Cannot remove the current branch.";
+    private static final String noCommandError =
+            "No command with that name exists.";
 }
