@@ -64,9 +64,9 @@ public class Repository {
     public static final File COMMIT_TREE = join(GITLET_DIR, "COMMIT_TREE");
 
     /** Used for lazy-load and lazy-cache */
-    public static HashMap<String, Commit> commitTree = null;
-    public static HashMap<String , String> branchTree = null;
-    public static TreeMap<String, String> stagedTree = null;
+    private static HashMap<String, Commit> commitTree = null;
+    private static HashMap<String, String> branchTree = null;
+    private static TreeMap<String, String> stagedTree = null;
 
     /** Status code for checkout a file */
     public static final int CHECKOUT_SUCCESS = 0;
@@ -91,7 +91,7 @@ public class Repository {
     /* Fill in the rest of this class. */
 
     /** Build up a new Repository */
-    public static void initializeRepo(){
+    public static void initializeRepo() {
         GITLET_DIR.mkdir();
         COMMIT_PATH.mkdir();
         BRANCH_PATH.mkdir();
@@ -178,13 +178,13 @@ public class Repository {
     }
 
     /** Given a sha1 code, return the commit it represents */
-    private static Commit findCommit(String SHA1) {
+    private static Commit findCommit(String sha1) {
         loadCommitTree();
-        return commitTree.get(SHA1); // Can be null.
+        return commitTree.get(sha1); // Can be null.
     }
 
     /** Create Blobs and update the commit */
-    private static boolean clearStagingArea(Commit commit){
+    private static boolean clearStagingArea(Commit commit) {
         loadStagedTree();
         if (stagedTree.isEmpty()) {
             return false;
@@ -261,7 +261,7 @@ public class Repository {
     public static void log() {
         String hashing = readContentsAsString(HEAD);
         Commit currentCommit = findCommit(hashing);
-        while(currentCommit != null) {
+        while (currentCommit != null) {
             printCommit(currentCommit, hashing);
             hashing = currentCommit.parentCommit;
             currentCommit = findCommit(hashing);
@@ -277,9 +277,9 @@ public class Repository {
         }
     }
     /** Print one commit */
-    private static void printCommit(Commit commit, String SHA1) {
+    private static void printCommit(Commit commit, String sha1) {
         System.out.println("===");
-        System.out.println("commit" + " " + SHA1);
+        System.out.println("commit" + " " + sha1);
         System.out.println("Date:" + " " + commit.timeStamp);
         System.out.println(commit.message);
         System.out.println();
@@ -447,11 +447,11 @@ public class Repository {
     }
     /** Return the FullID of a shortID. If no such ID exists, return null. */
     private static String findFullCommitID(String shortID) {
-        int IDLength = shortID.length();
+        int idLength = shortID.length();
         List<String> commitList = plainFilenamesIn(COMMIT_PATH);
         assert commitList != null;
         for (String fullID: commitList) {
-            String tmp = fullID.substring(0, IDLength);
+            String tmp = fullID.substring(0, idLength);
             if (tmp.equals(shortID)) {
                 return fullID;
             }

@@ -15,7 +15,7 @@ public class FileHeap {
         int currentPlace = size + 1;
         fileNames[currentPlace] = fileName;
         String parent = fileNames[currentPlace / 2];
-        while(parent != null && fileName.compareTo(parent) < 0) {
+        while (parent != null && fileName.compareTo(parent) < 0) {
             swap(currentPlace, currentPlace / 2);
             currentPlace = currentPlace / 2;
             parent = fileNames[currentPlace / 2];
@@ -26,7 +26,7 @@ public class FileHeap {
     /** WARNING: This operation will clear the heap! */
     public void printWithTarget(String currentBranch) {
         int totalSize = this.size;
-        for(int i = 0; i < totalSize; i++) {
+        for (int i = 0; i < totalSize; i++) {
             if (fileNames[1].equals(currentBranch)) {
                 System.out.print("*");
             }
@@ -47,12 +47,12 @@ public class FileHeap {
         int left = currentPlace * 2;
         int right = currentPlace * 2 + 1;
         /* When both children are in the range */
-        while(right <= this.size) {
+        while (right <= this.size) {
             if (target.compareTo(fileNames[left]) <= 0
                     || target.compareTo(fileNames[right]) <= 0) {
                 break;
             }
-            int nextPlace = (fileNames[left].compareTo(fileNames[right]) <= 0)? left: right;
+            int nextPlace = (fileNames[left].compareTo(fileNames[right]) <= 0) ? left : right;
             swap(currentPlace, nextPlace);
             currentPlace = nextPlace;
             left = currentPlace * 2;
