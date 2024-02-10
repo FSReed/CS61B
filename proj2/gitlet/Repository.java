@@ -1,5 +1,7 @@
 package gitlet;
 
+import org.eclipse.jetty.util.IO;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -78,31 +80,36 @@ public class Repository {
     public static final int RM_CURRENT_BRANCH = 1;
     public static final int RM_NO_SUCH_BRANCH = 2;
 
+    /** Status code for reset */
+    public static final int RESET_SUCCESS = 0;
+    public static final int RESET_NO_COMMIT = 1;
+    public static final int RESET_UNTRACKED_FILE = 2;
+
     /* TODO: fill in the rest of this class. */
 
     /** Build up a new Repository */
-    public static void initializeRepo() throws IOException{
+    public static void initializeRepo(){
         GITLET_DIR.mkdir();
         COMMIT_PATH.mkdir();
         BRANCH_PATH.mkdir();
         BLOB_PATH.mkdir();
-        HEAD.createNewFile();
+        createFile(HEAD);
         /* Make sure there will always be a map in the BRANCH_TREE */
         writeObject(BRANCH_TREE, new HashMap<>());
-        BRANCH_TREE.createNewFile();
+        createFile(BRANCH_TREE);
         /* Make sure there will always be a treemap of snapshots in the Staging Area */
         writeObject(STAGED, new TreeMap<>());
-        STAGED.createNewFile();
+        createFile(STAGED);
         /* Make sure there will always be a map in the COMMIT_TREE */
         writeObject(COMMIT_TREE, new HashMap<>());
-        COMMIT_TREE.createNewFile();
+        createFile(COMMIT_TREE);
         /* Create the master branch */
         writeContents(CURRENT_BRANCH, "master");
         initialCommit();
     }
 
     /** Helper function for creating a initial commit */
-    private static void initialCommit() throws IOException{
+    private static void initialCommit() {
         Commit tmp = Commit.createInitialCommit();
         String initialHash = saveCommit(tmp);
         addToCommitTree(initialHash, tmp);
@@ -113,7 +120,7 @@ public class Repository {
      * The parent commit will be the HEAD of this repo.
      * For the first commit, its parentCommit will be null.
      */
-    public static boolean commit(String s) throws IOException {
+    public static boolean commit(String s) {
         String parentCommit = readContentsAsString(HEAD);
         Commit newOne = new Commit(s, parentCommit);
         copySnapshotFromParent(newOne);
@@ -144,7 +151,7 @@ public class Repository {
     }
 
     /** Save the commit into .gitlet/commits and return its name */
-    private static String saveCommit(Commit commit) throws IOException {
+    private static String saveCommit(Commit commit) {
         String result = commit.message
                 + commit.timeStamp
                 + commit.snapshots.toString()
@@ -153,7 +160,7 @@ public class Repository {
         File tmp = join(Repository.COMMIT_PATH, fileName);
         if (!tmp.exists()) {
             writeObject(tmp, commit);
-            tmp.createNewFile();
+            createFile(tmp);
         }
         return fileName;
     }
@@ -174,7 +181,7 @@ public class Repository {
     }
 
     /** Create Blobs and update the commit */
-    private static boolean clearStagingArea(Commit commit) throws IOException{
+    private static boolean clearStagingArea(Commit commit){
         TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
         if (tmp.isEmpty()) {
             return false;
@@ -189,7 +196,7 @@ public class Repository {
             String hashing = sha1(content);
             File blob = join(BLOB_PATH, hashing);
             if (!blob.exists()) {
-                blob.createNewFile();
+                createFile(blob);
                 writeContents(blob, content);
             }
             commit.snapshots.put(fileName, hashing);
@@ -201,7 +208,7 @@ public class Repository {
     /* ------------End of helper function for commit-------------------------*/
 
     /** Add a file to the staging area */
-    public static boolean addToStagingArea(String fileName) throws IOException{
+    public static boolean addToStagingArea(String fileName) {
         File currentFile = join(CWD, fileName);
         if (!currentFile.exists()) {
             return false;
@@ -213,7 +220,7 @@ public class Repository {
     /** Compare the content of the current file to the content in the previous commit.
      *  The previous commit is the commit pointed by HEAD.
      */
-    private static void updateFileContent(String fileName) throws IOException{
+    private static void updateFileContent(String fileName) {
         Commit prevCommit = findCommit(readContentsAsString(HEAD)); // Constant
         TreeMap<String, String> fileList = prevCommit.snapshots;
         String blobHash = fileList.get(fileName); // log(N). Can be null.
@@ -349,8 +356,9 @@ public class Repository {
         Commit headCommit = findCommit(headHash);
         TreeMap<String, String> stagingArea = readObject(STAGED, TreeMap.class);
         for (String fileName: allFile) {
+            /* get(fileName) == null indicates no key or staged for removal */
             if (!headCommit.snapshots.containsKey(fileName)
-                    && !stagingArea.containsKey(fileName)) {
+                    && stagingArea.get(fileName) == null) {
                 untrackedFiles.add(fileName);
             }
         }
@@ -359,10 +367,8 @@ public class Repository {
     /* ------------End of helper function for status-------------------------*/
 
     /** gitlet checkout */
-    public static int checkoutOneFileToCommit(String commitID, String fileName) throws IOException{
-        if (commitID.length() < 40) {
-            commitID = findFullCommitID(commitID);
-        }
+    public static int checkoutOneFileToCommit(String commitID, String fileName) {
+        commitID = findFullCommitID(commitID);
         Commit targetCommit = findCommit(commitID);
         if (targetCommit == null) {
             return CHECKOUT_NO_COMMIT;
@@ -372,7 +378,7 @@ public class Repository {
         }
         File targetFile = join(CWD, fileName);
         if (!targetFile.exists()) {
-            targetFile.createNewFile();
+            createFile(targetFile);
         }
         String blobHash = targetCommit.snapshots.get(fileName); // Get SHA1 of content.
         String contentInFile = readContentsAsString(join(BLOB_PATH, blobHash));
@@ -380,12 +386,12 @@ public class Repository {
         return CHECKOUT_SUCCESS;
     }
 
-    public static int checkoutOneFileToHEAD(String fileName) throws IOException{
+    public static int checkoutOneFileToHEAD(String fileName) {
         String currentCommitID = readContentsAsString(HEAD);
         return checkoutOneFileToCommit(currentCommitID, fileName);
     }
 
-    public static int checkoutToBranch(String branchName) throws IOException{
+    public static int checkoutToBranch(String branchName) {
         HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
         String currentBranch = readContentsAsString(CURRENT_BRANCH);
         if (!branchTree.containsKey(branchName)) {
@@ -404,13 +410,14 @@ public class Repository {
         writeContents(CURRENT_BRANCH, branchName); // Change current branch
         writeContents(HEAD, targetHash); // Change HEAD Commit
         deleteAndModify(targetCommit);
+        writeObject(STAGED, new TreeMap<>()); // Clear the staging area
         return CHECKOUT_SUCCESS;
     }
 
     /** Delete the files in the working space which are not tracked in a commit
      *  Then Modify the files in the commit
      */
-    private static void deleteAndModify(Commit commit) throws IOException{
+    private static void deleteAndModify(Commit commit) {
         List<String> fileList = plainFilenamesIn(CWD);
         /* Delete untracked files */
         assert fileList != null;
@@ -426,7 +433,7 @@ public class Repository {
             String blobHash = entry.getValue();
             File targetFile = join(CWD, fileName);
             if (!targetFile.exists()) {
-                targetFile.createNewFile();
+                createFile(targetFile);
             }
             String content = readContentsAsString(join(BLOB_PATH, blobHash));
             writeContents(targetFile, content);
@@ -471,6 +478,15 @@ public class Repository {
         branchTree.remove(branchName);
         writeObject(BRANCH_TREE, branchTree);
         return RM_SUCCESS;
+    }
+    /* ------------End of helper function for (rm-)branch--------------------*/
+
+    private static void createFile(File file) {
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     public static void test() {
     }
