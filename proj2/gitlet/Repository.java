@@ -1,7 +1,5 @@
 package gitlet;
 
-import org.eclipse.jetty.util.IO;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -65,6 +63,11 @@ public class Repository {
      */
     public static final File COMMIT_TREE = join(GITLET_DIR, "COMMIT_TREE");
 
+    /** Used for lazy-load and lazy-cache */
+    public static HashMap<String, Commit> commitTree = null;
+    public static HashMap<String , String> branchTree = null;
+    public static TreeMap<String, String> stagedTree = null;
+
     /** Status code for checkout a file */
     public static final int CHECKOUT_SUCCESS = 0;
     public static final int CHECKOUT_NO_COMMIT = 1;
@@ -113,7 +116,7 @@ public class Repository {
         Commit tmp = Commit.createInitialCommit();
         String initialHash = saveCommit(tmp);
         addToCommitTree(initialHash, tmp);
-        updateBranchAfterCommit(initialHash);
+        updateBranch(initialHash);
     }
 
     /** Make a commit with message s.
@@ -130,7 +133,7 @@ public class Repository {
         }
         String hashing = saveCommit(newOne);
         addToCommitTree(hashing, newOne);
-        updateBranchAfterCommit(hashing);
+        updateBranch(hashing);
         return true;
     }
 
@@ -145,9 +148,9 @@ public class Repository {
 
     /** Add a commit to the commit tree */
     private static void addToCommitTree(String hashing, Commit commit) {
-        HashMap<String, Commit> tmp = readObject(COMMIT_TREE, HashMap.class);
-        tmp.put(hashing, commit);
-        writeObject(COMMIT_TREE, tmp);
+        loadCommitTree();
+        commitTree.put(hashing, commit);
+        writeObject(COMMIT_TREE, commitTree);
     }
 
     /** Save the commit into .gitlet/commits and return its name */
@@ -166,27 +169,27 @@ public class Repository {
     }
 
     /** Update the branch after a commit */
-    private static void updateBranchAfterCommit(String hashing) {
+    private static void updateBranch(String hashing) {
         writeContents(HEAD, hashing);
         String crtBranch = readContentsAsString(CURRENT_BRANCH);
-        HashMap<String, String> tmp = readObject(BRANCH_TREE, HashMap.class);
-        tmp.put(crtBranch, hashing);
-        writeObject(BRANCH_TREE, tmp);
+        loadBranchTree();
+        branchTree.put(crtBranch, hashing);
+        writeObject(BRANCH_TREE, branchTree);
     }
 
     /** Given a sha1 code, return the commit it represents */
     private static Commit findCommit(String SHA1) {
-        HashMap<String, Commit> tmp = readObject(COMMIT_TREE, HashMap.class);
-        return tmp.get(SHA1); // Can be null.
+        loadCommitTree();
+        return commitTree.get(SHA1); // Can be null.
     }
 
     /** Create Blobs and update the commit */
     private static boolean clearStagingArea(Commit commit){
-        TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
-        if (tmp.isEmpty()) {
+        loadStagedTree();
+        if (stagedTree.isEmpty()) {
             return false;
         }
-        for (Map.Entry<String, String> entry: tmp.entrySet()) {
+        for (Map.Entry<String, String> entry: stagedTree.entrySet()) {
             String fileName = entry.getKey();
             String content = entry.getValue();
             if (content == null) {
@@ -227,20 +230,20 @@ public class Repository {
         File currentFile = join(CWD, fileName);
         String contentInFile = readContentsAsString(currentFile);
         String newBlobHash = sha1(contentInFile); // Won't be null.
-        TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
+        loadStagedTree();
         if (newBlobHash.equals(blobHash)) {
-            tmp.remove(fileName); // The only case we won't stage the file
+            stagedTree.remove(fileName); // The only case we won't stage the file
         } else {
-            tmp.put(fileName, contentInFile);
+            stagedTree.put(fileName, contentInFile);
         }
-        writeObject(STAGED, tmp);
+        writeObject(STAGED, stagedTree);
     }
     /* ------------End of helper function for addToStagingArea---------------*/
 
     /** gitlet rm */
     public static boolean remove(String fileName) {
-        TreeMap<String, String> tmp = readObject(STAGED, TreeMap.class);
-        String staged = tmp.remove(fileName);
+        loadStagedTree();
+        String staged = stagedTree.remove(fileName);
         Commit prevCommit = findCommit(readContentsAsString(HEAD));
         boolean tracked = prevCommit.snapshots.containsKey(fileName);
         if (tracked) {
@@ -248,9 +251,9 @@ public class Repository {
             if (target.exists()) {
                 restrictedDelete(target);
             }
-            tmp.put(fileName, null);
+            stagedTree.put(fileName, null);
         }
-        writeObject(STAGED, tmp);
+        writeObject(STAGED, stagedTree);
         return staged != null || tracked;
     }
 
@@ -308,7 +311,7 @@ public class Repository {
 
     private static void printBranchState() {
         System.out.println("=== Branches ===");
-        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        loadBranchTree();
         FileHeap heap = new FileHeap(branchTree.size());
         for (String branchName: branchTree.keySet()) {
             heap.add(branchName);
@@ -319,10 +322,10 @@ public class Repository {
     }
 
     private static void printStagingArea() {
-        TreeMap<String, String> stagingArea = readObject(STAGED, TreeMap.class);
-        FileHeap stagedFiles = new FileHeap(stagingArea.size());
-        FileHeap removedFiles = new FileHeap(stagingArea.size());
-        for (Map.Entry<String, String> entry: stagingArea.entrySet()) {
+        loadStagedTree();
+        FileHeap stagedFiles = new FileHeap(stagedTree.size());
+        FileHeap removedFiles = new FileHeap(stagedTree.size());
+        for (Map.Entry<String, String> entry: stagedTree.entrySet()) {
             String fileName = entry.getKey();
             String content = entry.getValue();
             if (content == null) {
@@ -354,11 +357,11 @@ public class Repository {
         FileHeap untrackedFiles = new FileHeap(allFile.size());
         String headHash = readContentsAsString(HEAD);
         Commit headCommit = findCommit(headHash);
-        TreeMap<String, String> stagingArea = readObject(STAGED, TreeMap.class);
+        loadStagedTree();
         for (String fileName: allFile) {
             /* get(fileName) == null indicates no key or staged for removal */
             if (!headCommit.snapshots.containsKey(fileName)
-                    && stagingArea.get(fileName) == null) {
+                    && stagedTree.get(fileName) == null) {
                 untrackedFiles.add(fileName);
             }
         }
@@ -369,10 +372,10 @@ public class Repository {
     /** gitlet checkout */
     public static int checkoutOneFileToCommit(String commitID, String fileName) {
         commitID = findFullCommitID(commitID);
-        Commit targetCommit = findCommit(commitID);
-        if (targetCommit == null) {
+        if (commitID == null) {
             return CHECKOUT_NO_COMMIT;
         }
+        Commit targetCommit = findCommit(commitID);
         if (!targetCommit.snapshots.containsKey(fileName)) {
             return CHECKOUT_NO_FILE_IN_COMMIT;
         }
@@ -392,7 +395,7 @@ public class Repository {
     }
 
     public static int checkoutToBranch(String branchName) {
-        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        loadBranchTree();
         String currentBranch = readContentsAsString(CURRENT_BRANCH);
         if (!branchTree.containsKey(branchName)) {
             return CHECKOUT_NO_BRANCH_EXISTS;
@@ -406,18 +409,17 @@ public class Repository {
         }
         /* Checkout to a branch */
         String targetHash = branchTree.get(branchName);
-        Commit targetCommit = findCommit(targetHash);
         writeContents(CURRENT_BRANCH, branchName); // Change current branch
         writeContents(HEAD, targetHash); // Change HEAD Commit
-        deleteAndModify(targetCommit);
-        writeObject(STAGED, new TreeMap<>()); // Clear the staging area
+        deleteAndModify(targetHash);
         return CHECKOUT_SUCCESS;
     }
 
     /** Delete the files in the working space which are not tracked in a commit
      *  Then Modify the files in the commit
      */
-    private static void deleteAndModify(Commit commit) {
+    private static void deleteAndModify(String commitHash) {
+        Commit commit = findCommit(commitHash);
         List<String> fileList = plainFilenamesIn(CWD);
         /* Delete untracked files */
         assert fileList != null;
@@ -438,6 +440,8 @@ public class Repository {
             String content = readContentsAsString(join(BLOB_PATH, blobHash));
             writeContents(targetFile, content);
         }
+        stagedTree = new TreeMap<>();
+        writeObject(STAGED, stagedTree); // Clear the staging area
     }
     /** Return the FullID of a shortID. If no such ID exists, return null. */
     private static String findFullCommitID(String shortID) {
@@ -456,7 +460,7 @@ public class Repository {
 
     /** gitlet branch, rm-branch */
     public static boolean addNewBranch(String branchName) {
-        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        loadBranchTree();
         if (branchTree.containsKey(branchName)) {
             return false;
         }
@@ -467,7 +471,7 @@ public class Repository {
     }
 
     public static int removeBranch(String branchName) {
-        HashMap<String, String> branchTree = readObject(BRANCH_TREE, HashMap.class);
+        loadBranchTree();
         String currentBranch = readContentsAsString(CURRENT_BRANCH);
         if (currentBranch.equals(branchName)) {
             return RM_CURRENT_BRANCH;
@@ -481,11 +485,44 @@ public class Repository {
     }
     /* ------------End of helper function for (rm-)branch--------------------*/
 
+    /** gitlet reset */
+    public static int reset(String commitID) {
+        commitID = findFullCommitID(commitID);
+        if (commitID == null) {
+            return RESET_NO_COMMIT;
+        }
+        FileHeap untrackedFiles = findUntrackedFiles();
+        if (!untrackedFiles.isEmpty()) {
+            return RESET_UNTRACKED_FILE;
+        }
+        deleteAndModify(commitID);
+        updateBranch(commitID);
+        return RESET_SUCCESS;
+    }
+    /* ------------End of helper function for reset--------------------------*/
+
+    /** Helper functions for the whole repo */
     private static void createFile(File file) {
         try {
             file.createNewFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void loadCommitTree() {
+        if (commitTree == null)  {
+            commitTree = readObject(COMMIT_TREE, HashMap.class);
+        }
+    }
+    private static void loadBranchTree() {
+        if (branchTree == null) {
+            branchTree = readObject(BRANCH_TREE, HashMap.class);
+        }
+    }
+    private static void loadStagedTree() {
+        if (stagedTree == null) {
+            stagedTree = readObject(STAGED, TreeMap.class);
         }
     }
     public static void test() {

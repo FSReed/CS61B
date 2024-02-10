@@ -107,6 +107,10 @@ public class Main {
                 rmbranchErrorCodeProcess(removeBranchCode);
                 break;
             case "reset":
+                paramCheck(args, 2);
+                String resetCommit = args[1];
+                int resetResult = Repository.reset(resetCommit);
+                resetErrorCodeProcess(resetResult);
                 break;
             case "merge":
                 break;
@@ -159,6 +163,17 @@ public class Main {
                 exitWithMessage(removingCurrentBranchError);
             case Repository.RM_NO_SUCH_BRANCH:
                 exitWithMessage(noSuchBranchToRemoveError);
+        }
+    }
+
+    private static void resetErrorCodeProcess(int exitCode) {
+        switch (exitCode) {
+            case Repository.RESET_SUCCESS:
+                System.exit(0);
+            case Repository.RESET_NO_COMMIT:
+                exitWithMessage(noCommitError);
+            case Repository.RESET_UNTRACKED_FILE:
+                exitWithMessage(untrackedFileError);
         }
     }
     /** All error messages */
