@@ -20,6 +20,7 @@ public class FileHeap {
             currentPlace = currentPlace / 2;
             parent = fileNames[currentPlace / 2];
         }
+        System.out.println(fileName);
         this.size += 1;
     }
 
@@ -38,7 +39,7 @@ public class FileHeap {
     }
 
     public boolean isEmpty() {
-        return this.size > 0;
+        return this.size == 0;
     }
 
     private void resize() {
