@@ -343,6 +343,8 @@ public class Repository {
     }
 
     private static void printExtra() {
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
         System.out.println("=== Untracked Files ===");
         FileHeap tmp = findUntrackedFiles();
         tmp.printWithTarget("");

@@ -36,10 +36,11 @@ public class Main {
                 break;
             // FILL THE REST IN
             case "commit":
-                if (args.length < 2) {
+                paramCheck(args, 2);
+                String message = args[1];
+                if (message.isEmpty()) {
                     exitWithMessage(noCommitMessageError);
                 }
-                String message = args[1];
                 boolean commitSuccess = Repository.commit(message);
                 if (!commitSuccess) {
                     exitWithMessage(noChangeError);
