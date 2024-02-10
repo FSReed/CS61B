@@ -1,7 +1,5 @@
 package gitlet;
 
-import java.io.IOException;
-
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author FSReed
  */
@@ -36,7 +34,7 @@ public class Main {
                     exitWithMessage(noFileError);
                 }
                 break;
-            // TODO: FILL THE REST IN
+            // FILL THE REST IN
             case "commit":
                 if (args.length < 2) {
                     exitWithMessage(noCommitMessageError);

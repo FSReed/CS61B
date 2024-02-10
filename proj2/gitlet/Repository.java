@@ -88,7 +88,7 @@ public class Repository {
     public static final int RESET_NO_COMMIT = 1;
     public static final int RESET_UNTRACKED_FILE = 2;
 
-    /* TODO: fill in the rest of this class. */
+    /* Fill in the rest of this class. */
 
     /** Build up a new Repository */
     public static void initializeRepo(){

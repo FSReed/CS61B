@@ -36,7 +36,7 @@ public class Commit implements Serializable {
     /** The parent commit, represented using hash code */
     public String parentCommit;
 
-    /* TODO: fill in the rest of this class. */
+    /* Fill in the rest of this class. */
 
     /** The Constructor */
     public Commit(String m, String parentHash) {

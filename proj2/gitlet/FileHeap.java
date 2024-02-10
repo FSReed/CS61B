@@ -1,7 +1,7 @@
 package gitlet;
 
 public class FileHeap {
-    private String[] fileNames;
+    private final String[] fileNames;
     private int size;
     private final int capacity;
     public FileHeap(int capacity) {
