@@ -465,7 +465,7 @@ public class Repository {
         if (currentBranch.equals(branchName)) {
             return RM_CURRENT_BRANCH;
         }
-        if (branchTree.containsKey(branchName)) {
+        if (!branchTree.containsKey(branchName)) {
             return RM_NO_SUCH_BRANCH;
         }
         branchTree.remove(branchName);
