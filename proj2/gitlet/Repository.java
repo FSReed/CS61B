@@ -139,11 +139,11 @@ public class Repository {
 
     /** Helper Function for copying the snapshot of its parent */
     private static void copySnapshotFromParent(Commit commit) {
-        Commit parentCommit = findCommit(commit.parentCommit);
+        Commit parentCommit = findCommit(commit.getParentCommit());
         if (parentCommit == null) {
             return;
         }
-        commit.snapshots.putAll(parentCommit.snapshots);
+        commit.getSnapshots().putAll(parentCommit.getSnapshots());
     }
 
     /** Add a commit to the commit tree */
@@ -155,10 +155,10 @@ public class Repository {
 
     /** Save the commit into .gitlet/commits and return its name */
     private static String saveCommit(Commit commit) {
-        String result = commit.message
-                + commit.timeStamp
-                + commit.snapshots.toString()
-                + commit.parentCommit;
+        String result = commit.getMessage()
+                + commit.getTimeStamp()
+                + commit.getSnapshots().toString()
+                + commit.getParentCommit();
         String fileName = sha1(result);
         File tmp = join(Repository.COMMIT_PATH, fileName);
         if (!tmp.exists()) {
@@ -193,7 +193,7 @@ public class Repository {
             String fileName = entry.getKey();
             String content = entry.getValue();
             if (content == null) {
-                commit.snapshots.remove(fileName);
+                commit.getSnapshots().remove(fileName);
                 continue;
             }
             String hashing = sha1(content);
@@ -202,7 +202,7 @@ public class Repository {
                 createFile(blob);
                 writeContents(blob, content);
             }
-            commit.snapshots.put(fileName, hashing);
+            commit.getSnapshots().put(fileName, hashing);
         }
         /* Clear the staging area after commit */
         writeObject(STAGED, new TreeMap<>());
@@ -225,7 +225,7 @@ public class Repository {
      */
     private static void updateFileContent(String fileName) {
         Commit prevCommit = findCommit(readContentsAsString(HEAD)); // Constant
-        TreeMap<String, String> fileList = prevCommit.snapshots;
+        TreeMap<String, String> fileList = prevCommit.getSnapshots();
         String blobHash = fileList.get(fileName); // log(N). Can be null.
         File currentFile = join(CWD, fileName);
         String contentInFile = readContentsAsString(currentFile);
@@ -245,7 +245,7 @@ public class Repository {
         loadStagedTree();
         String staged = stagedTree.remove(fileName);
         Commit prevCommit = findCommit(readContentsAsString(HEAD));
-        boolean tracked = prevCommit.snapshots.containsKey(fileName);
+        boolean tracked = prevCommit.getSnapshots().containsKey(fileName);
         if (tracked) {
             File target = join(CWD, fileName);
             if (target.exists()) {
@@ -263,7 +263,7 @@ public class Repository {
         Commit currentCommit = findCommit(hashing);
         while (currentCommit != null) {
             printCommit(currentCommit, hashing);
-            hashing = currentCommit.parentCommit;
+            hashing = currentCommit.getParentCommit();
             currentCommit = findCommit(hashing);
         }
     }
@@ -280,8 +280,8 @@ public class Repository {
     private static void printCommit(Commit commit, String sha1) {
         System.out.println("===");
         System.out.println("commit" + " " + sha1);
-        System.out.println("Date:" + " " + commit.timeStamp);
-        System.out.println(commit.message);
+        System.out.println("Date:" + " " + commit.getTimeStamp());
+        System.out.println(commit.getMessage());
         System.out.println();
     }
     /* ------------End of helper function for logs---------------------------*/
@@ -293,7 +293,7 @@ public class Repository {
         assert allCommits != null;
         for (String commitID: allCommits) {
             Commit current = findCommit(commitID);
-            if (current.message.equals(targetMessage)) {
+            if (current.getMessage().equals(targetMessage)) {
                 result = true;
                 System.out.println(commitID);
             }
@@ -362,7 +362,7 @@ public class Repository {
         loadStagedTree();
         for (String fileName: allFile) {
             /* get(fileName) == null indicates no key or staged for removal */
-            if (!headCommit.snapshots.containsKey(fileName)
+            if (!headCommit.getSnapshots().containsKey(fileName)
                     && stagedTree.get(fileName) == null) {
                 untrackedFiles.add(fileName);
             }
@@ -378,14 +378,14 @@ public class Repository {
             return CHECKOUT_NO_COMMIT;
         }
         Commit targetCommit = findCommit(commitID);
-        if (!targetCommit.snapshots.containsKey(fileName)) {
+        if (!targetCommit.getSnapshots().containsKey(fileName)) {
             return CHECKOUT_NO_FILE_IN_COMMIT;
         }
         File targetFile = join(CWD, fileName);
         if (!targetFile.exists()) {
             createFile(targetFile);
         }
-        String blobHash = targetCommit.snapshots.get(fileName); // Get SHA1 of content.
+        String blobHash = targetCommit.getSnapshots().get(fileName); // Get SHA1 of content.
         String contentInFile = readContentsAsString(join(BLOB_PATH, blobHash));
         writeContents(targetFile, contentInFile);
         return CHECKOUT_SUCCESS;
@@ -426,13 +426,13 @@ public class Repository {
         /* Delete untracked files */
         assert fileList != null;
         for (String fileName: fileList) {
-            if (!commit.snapshots.containsKey(fileName)) {
+            if (!commit.getSnapshots().containsKey(fileName)) {
                 File tmp = join(CWD, fileName);
                 restrictedDelete(tmp);
             }
         }
         /* Modify tracked files */
-        for (Map.Entry<String, String> entry: commit.snapshots.entrySet()) {
+        for (Map.Entry<String, String> entry: commit.getSnapshots().entrySet()) {
             String fileName = entry.getKey();
             String blobHash = entry.getValue();
             File targetFile = join(CWD, fileName);

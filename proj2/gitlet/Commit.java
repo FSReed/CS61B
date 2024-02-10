@@ -23,18 +23,18 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    public String message;
+    private String message;
 
     /** The timestamp of this Commit. */
-    public String timeStamp;
+    private String timeStamp;
 
     /** The files that has been changed in this Commit.
      *  The mapping of file name -> sha1 of the blob
      */
-    public TreeMap<String, String> snapshots;
+    private TreeMap<String, String> snapshots;
 
     /** The parent commit, represented using hash code */
-    public String parentCommit;
+    private String parentCommit;
 
     /* Fill in the rest of this class. */
 
@@ -61,5 +61,19 @@ public class Commit implements Serializable {
         formatter.format("%1$ta %1$tb %1$td %1$tT %1$tY %1$tz", epoch);
         tmp.timeStamp = formatter.toString();
         return tmp;
+    }
+
+    /** Get attributes */
+    public String getMessage() {
+        return this.message;
+    }
+    public String getTimeStamp() {
+        return this.timeStamp;
+    }
+    public TreeMap<String, String> getSnapshots() {
+        return this.snapshots;
+    }
+    public String getParentCommit() {
+        return this.parentCommit;
     }
 }

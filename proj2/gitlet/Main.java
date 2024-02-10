@@ -81,11 +81,17 @@ public class Main {
                         break;
                     /* checkout -- [file name](args[2]) */
                     case 3:
+                        if (!args[1].equals("--")) {
+                            exitWithMessage(paramError);
+                        }
                         int exitCode1 = Repository.checkoutOneFileToHEAD(args[2]);
                         checkoutErrorCodeProcess(exitCode1);
                         break;
                     /* checkout [commit id](args[1]) -- [file name](args[3]) */
                     case 4:
+                        if (!args[2].equals("--")) {
+                            exitWithMessage(paramError);
+                        }
                         int exitCode2 = Repository.checkoutOneFileToCommit(args[1], args[3]);
                         checkoutErrorCodeProcess(exitCode2);
                         break;
@@ -112,6 +118,7 @@ public class Main {
                 resetErrorCodeProcess(resetResult);
                 break;
             case "merge":
+                paramCheck(args, 2);
                 break;
             default:
                 exitWithMessage("Invalid operation.");
