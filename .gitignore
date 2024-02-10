@@ -8,6 +8,7 @@
 !.gitignore
 !*.md
 !*.drawio
+!*.png
 !library-sp21
 !foods.csv
 *.class
