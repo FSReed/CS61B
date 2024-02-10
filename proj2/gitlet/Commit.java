@@ -16,9 +16,7 @@ import java.util.TreeMap;
  *  @author FSReed
  */
 public class Commit implements Serializable {
-    /**
-     * TD: add instance variables here.
-     *
+     /** TD: add instance variables here.
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
@@ -40,8 +38,7 @@ public class Commit implements Serializable {
 
     /* TODO: fill in the rest of this class. */
 
-    /** The Constructor
-     */
+    /** The Constructor */
     public Commit(String m, String parentHash) {
         this.message = m;
         this.timeStamp = getTime();
