@@ -3,10 +3,7 @@ package gitlet;
 // TD: any imports you need here
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Formatter;
-import java.util.Locale;
-import java.util.TreeMap;
+import java.util.*;
 
 /** Represents a gitlet commit object.
  *  TD: It's a good idea to give a description here of what else this Class
@@ -63,6 +60,23 @@ public class Commit implements Serializable {
         return tmp;
     }
 
+    public String getSha1() {
+        String information = this.getMetadata();
+        return Utils.sha1(information);
+    }
+
+    /** Get the metadata of the Commit */
+    private String getMetadata() {
+        StringBuilder tmp = new StringBuilder(this.message
+                + this.timeStamp
+                + this.parentCommit);
+        for (Map.Entry<String, String> entry: snapshots.entrySet()) {
+            String fileName = entry.getKey();
+            String blobHash = entry.getValue();
+            tmp.append(fileName).append(blobHash);
+        }
+        return tmp.toString();
+    }
     /** Get attributes */
     public String getMessage() {
         return this.message;

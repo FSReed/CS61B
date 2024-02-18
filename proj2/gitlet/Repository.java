@@ -88,6 +88,15 @@ public class Repository {
     public static final int RESET_NO_COMMIT = 1;
     public static final int RESET_UNTRACKED_FILE = 2;
 
+    /** Status code for merge */
+    public static final int MERGE_SUCCESS = 0;
+    public static final int MERGE_UNCOMMITTED_CHANGES = 1;
+    public static final int MERGE_NO_SUCH_BRANCH = 2;
+    public static final int MERGE_CURRENT_BRANCH = 3;
+    public static final int MERGE_UNTRACKED_FILES = 4;
+    public static final int MERGE_NO_OPERATION = 5;
+    public static final int MERGE_CHECKOUT = 6;
+
     /* Fill in the rest of this class. */
 
     /** Build up a new Repository */
@@ -155,11 +164,8 @@ public class Repository {
 
     /** Save the commit into .gitlet/commits and return its name */
     private static String saveCommit(Commit commit) {
-        String result = commit.getMessage()
-                + commit.getTimeStamp()
-                + commit.getSnapshots().toString()
-                + commit.getParentCommit();
-        String fileName = sha1(result);
+        String result = commit.getSha1();
+        String fileName = result;
         File tmp = join(Repository.COMMIT_PATH, fileName);
         if (!tmp.exists()) {
             writeObject(tmp, commit);
@@ -503,6 +509,46 @@ public class Repository {
     }
     /* ------------End of helper function for reset--------------------------*/
 
+    /** gitlet merge */
+    public static int merge(String targetBranch) {
+        loadBranchTree();
+        loadStagedTree();
+        if (!stagedTree.isEmpty()) {
+            return MERGE_UNCOMMITTED_CHANGES;
+        }
+        if (!branchTree.containsKey(targetBranch)) {
+            return MERGE_NO_SUCH_BRANCH;
+        }
+        String currentBranch = readContentsAsString(CURRENT_BRANCH);
+        if (targetBranch.equals(currentBranch)) {
+            return MERGE_CURRENT_BRANCH;
+        }
+        FileHeap untrackedFiles = findUntrackedFiles();
+        if (!untrackedFiles.isEmpty()) {
+            return MERGE_UNTRACKED_FILES;
+        }
+        /* End of pre-check */
+        String currentCommitHash = branchTree.get(currentBranch);
+        String targetCommitHash = branchTree.get(targetBranch);
+        String splitCommitHash = findSplitPoint(currentCommitHash, targetCommitHash);
+        if (splitCommitHash.equals(targetCommitHash)) {
+            return MERGE_NO_OPERATION;
+        }
+        if (splitCommitHash.equals(currentCommitHash)) {
+            checkoutToBranch(targetBranch);
+            return MERGE_CHECKOUT;
+        }
+        Commit splitPoint = findCommit(splitCommitHash);
+        
+    }
+
+    /** Find the split point of two commit
+     * TODO: Fill in the logic of findSplitPoint
+     */
+    private static String findSplitPoint(String firstCommit, String secondCommit) {
+        return "Not done yet";
+    }
+
     /** Helper functions for the whole repo */
     private static void createFile(File file) {
         try {
@@ -526,7 +572,5 @@ public class Repository {
         if (stagedTree == null) {
             stagedTree = readObject(STAGED, TreeMap.class);
         }
-    }
-    public static void test() {
     }
 }

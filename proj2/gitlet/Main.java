@@ -119,6 +119,9 @@ public class Main {
                 break;
             case "merge":
                 paramCheck(args, 2);
+                String targetBranch = args[1];
+                int mergeCode = Repository.merge(targetBranch);
+                mergeErrorCodeProcess(mergeCode);
                 break;
             default:
                 exitWithMessage(noCommandError);
@@ -168,7 +171,7 @@ public class Main {
             case Repository.RM_CURRENT_BRANCH:
                 exitWithMessage(removingCurrentBranchError);
             case Repository.RM_NO_SUCH_BRANCH:
-                exitWithMessage(noSuchBranchToRemoveError);
+                exitWithMessage(noSuchBranchError);
         }
     }
 
@@ -180,6 +183,25 @@ public class Main {
                 exitWithMessage(noCommitError);
             case Repository.RESET_UNTRACKED_FILE:
                 exitWithMessage(untrackedFileError);
+        }
+    }
+
+    private static void mergeErrorCodeProcess(int exitCode) {
+        switch (exitCode) {
+            case Repository.MERGE_SUCCESS:
+                System.exit(0);
+            case Repository.MERGE_UNCOMMITTED_CHANGES:
+                exitWithMessage(mergeUncommittedChangesError);
+            case Repository.MERGE_NO_SUCH_BRANCH:
+                exitWithMessage(noSuchBranchError);
+            case Repository.MERGE_CURRENT_BRANCH:
+                exitWithMessage(mergeSelfError);
+            case Repository.MERGE_UNTRACKED_FILES:
+                exitWithMessage(untrackedFileError);
+            case Repository.MERGE_NO_OPERATION:
+                exitWithMessage(mergeNoOperation);
+            case Repository.MERGE_CHECKOUT:
+                exitWithMessage(mergeCheckout);
         }
     }
     /** All error messages */
@@ -213,10 +235,18 @@ public class Main {
             "There is an untracked file in the way; delete it, or add and commit it first.";
     private static final String branchAlreadyExists =
             "A branch with that name already exists.";
-    private static final String noSuchBranchToRemoveError =
+    private static final String noSuchBranchError =
             "A branch with that name does not exist.";
     private static final String removingCurrentBranchError =
             "Cannot remove the current branch.";
     private static final String noCommandError =
             "No command with that name exists.";
+    private static final String mergeUncommittedChangesError =
+            "You have uncommitted changes.";
+    private static final String mergeSelfError =
+            "Cannot merge a branch with itself.";
+    private static final String mergeNoOperation =
+            "Given branch is an ancestor of the current branch.";
+    private static final String mergeCheckout =
+            "Current branch fast-forwarded.";
 }
