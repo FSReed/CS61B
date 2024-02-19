@@ -98,11 +98,4 @@ public class Commit implements Serializable {
             return new HashSet<>(this.snapshots.keySet());
         }
     }
-
-    public String getFileContent(String fileName) {
-        if (this.snapshots == null) {
-            return null;
-        }
-        return this.snapshots.get(fileName);
-    }
 }

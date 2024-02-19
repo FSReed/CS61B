@@ -600,11 +600,8 @@ public class Repository {
 
     /** Returns whether two commits have the same content of one file */
     private static boolean hasSameContent(String commit1, String commit2, String fileName) {
-        Commit cmt1 = findCommit(commit1);
-        Commit cmt2 = findCommit(commit2);
-        assert cmt1 != null && cmt2 != null;
-        String contentInCommit1 = cmt1.getFileContent(fileName);
-        String contentInCommit2 = cmt2.getFileContent(fileName);
+        String contentInCommit1 = getFileContent(commit1, fileName);
+        String contentInCommit2 = getFileContent(commit2, fileName);
         if (contentInCommit1 == null) {
             return contentInCommit2 == null; // Both commits don't track this file.
         } else {
@@ -614,15 +611,27 @@ public class Repository {
 
     /** Write the conflict message into a file and stage it */
     private static void writeConflictMessage(String current, String target, String fileName) {
-        Commit currentCommit = findCommit(current);
-        Commit targetCommit = findCommit(target);
         String newContent = "<<<<<<< HEAD\n";
-        newContent += currentCommit.getFileContent(fileName);
+        newContent += getFileContent(current, fileName);
         newContent += "=======\n";
-        newContent += targetCommit.getFileContent(fileName);
+        newContent += getFileContent(target, fileName);
         newContent += ">>>>>>>";
         writeContents(join(CWD, fileName), newContent);
         addToStagingArea(fileName);
+    }
+
+    /** Return the content of a file */
+    private static String getFileContent(String current, String fileName) {
+        Commit currentCommit = findCommit(current);
+        TreeMap<String, String> snapshots = currentCommit.getSnapshots();
+        if (snapshots == null) {
+            return null;
+        }
+        if (snapshots.get(fileName) == null) {
+            return null;
+        }
+        File blob = join(BLOB_PATH, snapshots.get(fileName));
+        return readContentsAsString(blob);
     }
 
     /** Create a merge commit */
