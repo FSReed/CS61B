@@ -1,6 +1,6 @@
 package gitlet;
 
-public class MergeCommit extends Commit{
+public class MergeCommit extends Commit {
     private final String commitToMerge;
 
     MergeCommit(String m, String parentCommit, String targetCommit) {
