@@ -111,6 +111,29 @@ public void printWithTarget(String currentBranch);
 // Won't reuse this heap again after printing.
 ```
 
+### MergeCommit `extends` Commit
+
+#### Fields
+
+```Java
+public class MergeCommit extends Commit{
+    private final String commitToMerge;
+
+    MergeCommit(String m, String parentCommit, String targetCommit) {
+        super(m, parentCommit);
+        this.commitToMerge = targetCommit;
+    }
+
+    @Override
+    protected String getMetadata() {
+        String origin = super.getMetadata();
+        return origin + this.commitToMerge;
+    }
+}
+
+```
+
+
 ## Structure of the repository
 
 ![design](./Design.png)
@@ -143,3 +166,20 @@ public void printWithTarget(String currentBranch);
 4. In staging area, I use a **FileName -> null** pair to represent removals.
 5. Use a class named `FileHeap` to print the entries in lexicographic order. The data structure used in this class is a **minimum-heap**.
 6. Add 3 static Map variables into the repo. These variables are used to implement **Lazy-load** and **Lazy-cache**.
+7. In my `commit`, I will copy the snapshot from the parent commit. So when I'm designing `merge`, I will only store the files that will be different from the parent commit.
+
+   | Split point | Current | Target |         Result          |
+   |:-----------:|:-------:|:------:|:-----------------------:|
+   |      A      |    A    |   !A   |           !A            |
+   |      B      |   !B    |   B    |    **!B(Unchanged)**    |
+   |      C      |   !C    |   !C   |      **Unchanged**      |
+   |    No D     |    D    |  No D  |    **D(Unchanged)**     |
+   |    No E     |  No E   |   E    |            E            |
+   |      F      |    F    |  No F  | No F(Remove, untracked) |
+   |      G      |  No G   |   G    |   **No G(Unchanged)**   |
+   |  H or No H  | $!H_1$  | $!H_2$ |        Conflict         |
+
+   In my implementation, the files need to be staged are the ones that :
+   - remain unchanged in the current branch but changed in the target branch.
+   - have different contents in the current branch and the target branch, which causes a conflict.
+8. I use another class `MergeCommit` which `extends` the `Commit` class. It has a new attribute `commitToMerge`.

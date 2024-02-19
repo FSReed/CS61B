@@ -202,6 +202,8 @@ public class Main {
                 exitWithMessage(mergeNoOperation);
             case Repository.MERGE_CHECKOUT:
                 exitWithMessage(mergeCheckout);
+            case Repository.MERGE_CONFLICT:
+                exitWithMessage(mergeConflictReport);
         }
     }
     /** All error messages */
@@ -249,4 +251,6 @@ public class Main {
             "Given branch is an ancestor of the current branch.";
     private static final String mergeCheckout =
             "Current branch fast-forwarded.";
+    private static final String mergeConflictReport =
+            "Encountered a merge conflict.";
 }

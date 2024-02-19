@@ -20,7 +20,7 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    private String message;
+    private final String message;
 
     /** The timestamp of this Commit. */
     private String timeStamp;
@@ -28,10 +28,10 @@ public class Commit implements Serializable {
     /** The files that has been changed in this Commit.
      *  The mapping of file name -> sha1 of the blob
      */
-    private TreeMap<String, String> snapshots;
+    private final TreeMap<String, String> snapshots;
 
     /** The parent commit, represented using hash code */
-    private String parentCommit;
+    private final String parentCommit;
 
     /* Fill in the rest of this class. */
 
@@ -66,7 +66,7 @@ public class Commit implements Serializable {
     }
 
     /** Get the metadata of the Commit */
-    private String getMetadata() {
+    protected String getMetadata() {
         StringBuilder tmp = new StringBuilder(this.message
                 + this.timeStamp
                 + this.parentCommit);
@@ -89,5 +89,20 @@ public class Commit implements Serializable {
     }
     public String getParentCommit() {
         return this.parentCommit;
+    }
+
+    public HashSet<String> allFiles() {
+        if (this.snapshots == null) {
+            return null;
+        } else {
+            return new HashSet<>(this.snapshots.keySet());
+        }
+    }
+
+    public String getFileContent(String fileName) {
+        if (this.snapshots == null) {
+            return null;
+        }
+        return this.snapshots.get(fileName);
     }
 }

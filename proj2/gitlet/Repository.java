@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 import static gitlet.Utils.*;
 
@@ -96,6 +97,7 @@ public class Repository {
     public static final int MERGE_UNTRACKED_FILES = 4;
     public static final int MERGE_NO_OPERATION = 5;
     public static final int MERGE_CHECKOUT = 6;
+    public static final int MERGE_CONFLICT = 7;
 
     /* Fill in the rest of this class. */
 
@@ -164,8 +166,7 @@ public class Repository {
 
     /** Save the commit into .gitlet/commits and return its name */
     private static String saveCommit(Commit commit) {
-        String result = commit.getSha1();
-        String fileName = result;
+        String fileName = commit.getSha1();
         File tmp = join(Repository.COMMIT_PATH, fileName);
         if (!tmp.exists()) {
             writeObject(tmp, commit);
@@ -539,14 +540,73 @@ public class Repository {
             return MERGE_CHECKOUT;
         }
         Commit splitPoint = findCommit(splitCommitHash);
-        
+        Commit currentCommit = findCommit(currentCommitHash);
+        Commit targetCommit = findCommit(targetCommitHash);
+        HashSet<String> allFiles = new HashSet<>();
+        allFiles.addAll(splitPoint.allFiles());
+        allFiles.addAll(currentCommit.allFiles());
+        allFiles.addAll(targetCommit.allFiles()); // A HashSet containing all files recorded.
+        boolean mergeConflict = false;
+        for (String fileName: allFiles) {
+            boolean hasConflict = mergeFile(fileName, splitCommitHash,
+                    currentCommitHash, targetCommitHash);
+            mergeConflict = mergeConflict || hasConflict;
+        }
+        // TODO : Commit
+        return mergeConflict ? MERGE_CONFLICT : MERGE_SUCCESS;
     }
 
-    /** Find the split point of two commit
-     * TODO: Fill in the logic of findSplitPoint
-     */
+    /** Find the split point of two commit */
     private static String findSplitPoint(String firstCommit, String secondCommit) {
-        return "Not done yet";
+        // TODO: This is the initial commit ID for the test.
+        return "11abc1a0e95cd91e1a036ecbbbf4a430dbd02487";
+    }
+
+    /** Process the file according to three commits in merge
+     *  Return whether there's a conflict during merge.
+     */
+    private static boolean mergeFile(String fileName, String sp, String crt, String tar) {
+        if (hasSameContent(sp, crt, fileName)) {
+            if (!hasSameContent(sp, tar, fileName) && !hasSameContent(crt, tar, fileName)) {
+                // Represents |A|A|!A| -> !A
+                checkoutOneFileToCommit(tar, fileName);
+                addToStagingArea(fileName);
+            }
+        } else {
+            // Represents |A|!A1|!A2| -> Conflict
+            if (!hasSameContent(sp, tar, fileName) && !hasSameContent(crt, tar, fileName)) {
+                writeConflictMessage(crt, tar, fileName);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Returns whether two commits have the same content of one file */
+    private static boolean hasSameContent(String commit1, String commit2, String fileName) {
+        Commit cmt1 = findCommit(commit1);
+        Commit cmt2 = findCommit(commit2);
+        assert cmt1 != null && cmt2 != null;
+        String contentInCommit1 = cmt1.getFileContent(fileName);
+        String contentInCommit2 = cmt2.getFileContent(fileName);
+        if (contentInCommit1 == null) {
+            return contentInCommit2 == null; // Both commits don't track this file.
+        } else {
+            return contentInCommit1.equals(contentInCommit2);
+        }
+    }
+
+    /** Write the conflict message into a file and stage it */
+    private static void writeConflictMessage(String current, String target, String fileName) {
+        Commit currentCommit = findCommit(current);
+        Commit targetCommit = findCommit(target);
+        String newContent = "<<<<<<< HEAD\n";
+        newContent += currentCommit.getFileContent(fileName);
+        newContent += "=======\n";
+        newContent += targetCommit.getFileContent(fileName);
+        newContent += ">>>>>>>";
+        writeContents(join(CWD, fileName), newContent);
+        addToStagingArea(fileName);
     }
 
     /** Helper functions for the whole repo */
