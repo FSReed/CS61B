@@ -287,9 +287,19 @@ public class Repository {
     private static void printCommit(Commit commit, String sha1) {
         System.out.println("===");
         System.out.println("commit" + " " + sha1);
+        if (commit instanceof MergeCommit) {
+            printMergeInfo((MergeCommit) commit);
+        }
         System.out.println("Date:" + " " + commit.getTimeStamp());
         System.out.println(commit.getMessage());
         System.out.println();
+    }
+
+    /** Print the line that contains merge information */
+    private static void printMergeInfo(MergeCommit commit) {
+        String parent = commit.getParentCommit().substring(0, 7);
+        String mergeinParent = commit.getMergeCommit().substring(0, 7);
+        System.out.println("Merge: " + parent + " " + mergeinParent);
     }
     /* ------------End of helper function for logs---------------------------*/
 
