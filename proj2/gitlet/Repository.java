@@ -1,7 +1,5 @@
 package gitlet;
 
-import org.apache.commons.math3.random.StableRandomGenerator;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
