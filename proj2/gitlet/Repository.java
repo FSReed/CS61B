@@ -1,5 +1,7 @@
 package gitlet;
 
+import org.apache.commons.math3.random.StableRandomGenerator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -137,13 +139,18 @@ public class Repository {
     public static boolean commit(String s) {
         String parentCommit = readContentsAsString(HEAD);
         Commit newOne = new Commit(s, parentCommit);
-        copySnapshotFromParent(newOne);
-        boolean changed = clearStagingArea(newOne);
+        return processCommit(newOne);
+    }
+
+    /** Extend commit method to fit merge commits */
+    private static boolean processCommit(Commit targetCommit) {
+        copySnapshotFromParent(targetCommit);
+        boolean changed = clearStagingArea(targetCommit);
         if (!changed) {
             return false;
         }
-        String hashing = saveCommit(newOne);
-        addToCommitTree(hashing, newOne);
+        String hashing = saveCommit(targetCommit);
+        addToCommitTree(hashing, targetCommit);
         updateBranch(hashing);
         return true;
     }
@@ -562,13 +569,14 @@ public class Repository {
                     currentCommitHash, targetCommitHash);
             mergeConflict = mergeConflict || hasConflict;
         }
-        // TODO : Commit
+        // Commit
+        mergingCommit(currentBranch, targetBranch);
         return mergeConflict ? MERGE_CONFLICT : MERGE_SUCCESS;
     }
 
     /** Find the split point of two commit */
     private static String findSplitPoint(String firstCommit, String secondCommit) {
-        // TODO: This is the initial commit ID for the test.
+        // This is the initial commit ID for the test.
         return "11abc1a0e95cd91e1a036ecbbbf4a430dbd02487";
     }
 
@@ -617,6 +625,17 @@ public class Repository {
         newContent += ">>>>>>>";
         writeContents(join(CWD, fileName), newContent);
         addToStagingArea(fileName);
+    }
+
+    /** Create a merge commit */
+    private static void mergingCommit(String currentBranch, String givenBranch) {
+        String message = "Merged " + givenBranch
+                + " into " + currentBranch + ".";
+        loadBranchTree();
+        String parent = branchTree.get(currentBranch);
+        String target = branchTree.get(givenBranch);
+        MergeCommit targetCommit = new MergeCommit(message, parent, target);
+        processCommit(targetCommit);
     }
 
     /** Helper functions for the whole repo */

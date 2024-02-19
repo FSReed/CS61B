@@ -17,7 +17,7 @@ public class Main {
         if (!firstArg.equals("init") && !repoExists()) {
             exitWithMessage(noRepoError);
         }
-        switch(firstArg) {
+        switch (firstArg) {
             case "init":
                 // TD: handle the `init` command
                 if (repoExists()) {
@@ -148,7 +148,7 @@ public class Main {
 
     /** Perform according to the exit code of checkout */
     private static void checkoutErrorCodeProcess(int exitCode) {
-        switch(exitCode) {
+        switch (exitCode) {
             case Repository.CHECKOUT_NO_COMMIT:
                 exitWithMessage(noCommitError);
             case Repository.CHECKOUT_NO_FILE_IN_COMMIT:
@@ -165,7 +165,7 @@ public class Main {
     }
 
     private static void rmbranchErrorCodeProcess(int exitCode) {
-        switch(exitCode) {
+        switch (exitCode) {
             case Repository.RM_SUCCESS:
                 System.exit(0);
             case Repository.RM_CURRENT_BRANCH:
