@@ -2,11 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.List;
-import java.util.Map;
-import java.util.HashSet;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -66,7 +62,7 @@ public class Repository {
 
     /** Used for lazy-load and lazy-cache */
     private static HashMap<String, Commit> commitTree = null;
-    private static HashMap<String, String> branchTree = null;
+    private static TreeMap<String, String> branchTree = null;
     private static TreeMap<String, String> stagedTree = null;
 
     /** Status code for checkout a file */
@@ -109,7 +105,7 @@ public class Repository {
         BLOB_PATH.mkdir();
         createFile(HEAD);
         /* Make sure there will always be a map in the BRANCH_TREE */
-        writeObject(BRANCH_TREE, new HashMap<>());
+        writeObject(BRANCH_TREE, new TreeMap<>());
         createFile(BRANCH_TREE);
         /* Make sure there will always be a treemap of snapshots in the Staging Area */
         writeObject(STAGED, new TreeMap<>());
@@ -334,19 +330,20 @@ public class Repository {
     private static void printBranchState() {
         System.out.println("=== Branches ===");
         loadBranchTree();
-        FileHeap heap = new FileHeap(branchTree.size());
-        for (String branchName: branchTree.keySet()) {
-            heap.add(branchName);
-        }
         String currentBranch = readContentsAsString(CURRENT_BRANCH);
-        heap.printWithTarget(currentBranch);
+        for (String branchName: branchTree.keySet()) {
+            if (branchName.equals(currentBranch)) {
+                System.out.print("*");
+            }
+            System.out.println(branchName);
+        }
         System.out.println();
     }
 
     private static void printStagingArea() {
         loadStagedTree();
-        FileHeap stagedFiles = new FileHeap(stagedTree.size());
-        FileHeap removedFiles = new FileHeap(stagedTree.size());
+        TreeSet<String> stagedFiles = new TreeSet<>();
+        TreeSet<String> removedFiles = new TreeSet<>();
         for (Map.Entry<String, String> entry: stagedTree.entrySet()) {
             String fileName = entry.getKey();
             String content = entry.getValue();
@@ -357,10 +354,14 @@ public class Repository {
             }
         }
         System.out.println("=== Staged Files ===");
-        stagedFiles.printWithTarget("");
+        for (String fileName: stagedFiles) {
+            System.out.println(fileName);
+        }
         System.out.println();
         System.out.println("=== Removed Files ===");
-        removedFiles.printWithTarget("");
+        for (String fileName: removedFiles) {
+            System.out.println(fileName);
+        }
         System.out.println();
     }
 
@@ -368,17 +369,19 @@ public class Repository {
         System.out.println("=== Modifications Not Staged For Commit ===");
         System.out.println();
         System.out.println("=== Untracked Files ===");
-        FileHeap tmp = findUntrackedFiles();
-        tmp.printWithTarget("");
+        TreeSet<String> tmp = findUntrackedFiles();
+        for (String fileName: tmp) {
+            System.out.println(fileName);
+        }
         System.out.println();
     }
 
-    private static FileHeap findUntrackedFiles() {
+    private static TreeSet<String> findUntrackedFiles() {
         List<String> allFile = plainFilenamesIn(CWD);
         if (allFile == null) {
-            return new FileHeap(0); // An Empty Heap.
+            return new TreeSet<>(); // An Empty Heap.
         }
-        FileHeap untrackedFiles = new FileHeap(allFile.size());
+        TreeSet<String> untrackedFiles = new TreeSet<>();
         String headHash = readContentsAsString(HEAD);
         Commit headCommit = findCommit(headHash);
         loadStagedTree();
@@ -427,7 +430,7 @@ public class Repository {
         if (branchName.equals(currentBranch)) {
             return CHECKOUT_SAME_BRANCH;
         }
-        FileHeap untrackedFiles = findUntrackedFiles();
+        TreeSet<String> untrackedFiles = findUntrackedFiles();
         if (!untrackedFiles.isEmpty()) {
             return CHECKOUT_UNTRACKED_FILE;
         }
@@ -515,7 +518,7 @@ public class Repository {
         if (commitID == null) {
             return RESET_NO_COMMIT;
         }
-        FileHeap untrackedFiles = findUntrackedFiles();
+        TreeSet<String> untrackedFiles = findUntrackedFiles();
         if (!untrackedFiles.isEmpty()) {
             return RESET_UNTRACKED_FILE;
         }
@@ -539,7 +542,7 @@ public class Repository {
         if (targetBranch.equals(currentBranch)) {
             return MERGE_CURRENT_BRANCH;
         }
-        FileHeap untrackedFiles = findUntrackedFiles();
+        TreeSet<String> untrackedFiles = findUntrackedFiles();
         if (!untrackedFiles.isEmpty()) {
             return MERGE_UNTRACKED_FILES;
         }
@@ -661,7 +664,7 @@ public class Repository {
     }
     private static void loadBranchTree() {
         if (branchTree == null) {
-            branchTree = readObject(BRANCH_TREE, HashMap.class);
+            branchTree = readObject(BRANCH_TREE, TreeMap.class);
         }
     }
     private static void loadStagedTree() {
