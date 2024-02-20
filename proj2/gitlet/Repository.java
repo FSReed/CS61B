@@ -674,8 +674,12 @@ public class Repository {
         if (hasSameContent(sp, crt, fileName)) {
             if (!hasSameContent(sp, tar, fileName) && !hasSameContent(crt, tar, fileName)) {
                 // Represents |A|A|!A| -> !A
-                checkoutOneFileToCommit(tar, fileName);
-                addToStagingArea(fileName);
+                int fileDeleted = checkoutOneFileToCommit(tar, fileName);
+                if (fileDeleted == CHECKOUT_NO_FILE_IN_COMMIT) {
+                    remove(fileName);
+                } else {
+                    addToStagingArea(fileName);
+                }
             }
         } else {
             // Represents |A|!A1|!A2| -> Conflict
