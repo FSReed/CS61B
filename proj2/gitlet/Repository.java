@@ -582,40 +582,89 @@ public class Repository {
      */
     private static String findSplitPoint(String firstCommit, String secondCommit) {
         loadCommitTree();
-        Queue<String> qOne = new LinkedList<>();
-        Queue<String> qTwo = new LinkedList<>();
-        TreeSet<String> pathOne = new TreeSet<>();
-        TreeSet<String> pathTwo = new TreeSet<>();
-        qOne.offer(firstCommit);
-        qTwo.offer(secondCommit);
-        while (!qOne.isEmpty() || !qTwo.isEmpty()) {
-            firstCommit = qOne.poll();
-            secondCommit = qTwo.poll();
-            if (pathTwo.contains(firstCommit)) {
-                return firstCommit;
+        GraphIterator graphOne = new GraphIterator(firstCommit);
+        GraphIterator graphTwo = new GraphIterator(secondCommit);
+        String splitPoint = null;
+        int minDist = (int) Double.POSITIVE_INFINITY;
+        while (!graphOne.queue.isEmpty() || graphTwo.queue.isEmpty()) {
+            int dist1 = graphOne.visit();
+            int dist2 = graphTwo.visit();
+            String commit1 = graphOne.currentCommit;
+            String commit2 = graphTwo.currentCommit;
+            if (graphTwo.contains(commit1)) {
+                int totalDist1 = dist1 + graphTwo.get(commit1);
+                if (totalDist1 < minDist) {
+                    splitPoint = commit1;
+                }
             }
-            pathOne.add(firstCommit);
-            if (pathOne.contains(secondCommit)) {
-                return secondCommit;
+            if (graphOne.contains(commit2)) {
+                int totalDist2 = dist2 + graphOne.get(commit2);
+                if (totalDist2 < minDist) {
+                    splitPoint = commit2;
+                    minDist = totalDist2;
+                }
             }
-            pathTwo.add(secondCommit);
-            addAncestorToQueue(qOne, firstCommit);
-            addAncestorToQueue(qTwo, secondCommit);
         }
-        return null; // This is impossible in gitlet.
+        return splitPoint;
     }
 
-    /** Add the ancestor of a commit to the Queue */
-    private static void addAncestorToQueue(Queue queue, String commitHash) {
-        Commit current = findCommit(commitHash);
-        if (current.getParentCommit() == null) {
-            return;
+    /** Graph iterator helper class */
+    private static class GraphIterator {
+        GraphIterator(String startingNode) {
+            allPossibleNodes = new TreeMap<>();
+            currentCommit = startingNode;
+            allPossibleNodes.put(currentCommit, 0);
+            queue = new LinkedList<>();
+            queue.offer(currentCommit);
         }
-        queue.offer(current.getParentCommit());
-        if (current instanceof MergeCommit) {
-            queue.offer(((MergeCommit) current).getMergeCommit());
+        boolean hasPassed(String commitNode) {
+            return allPossibleNodes.containsKey(commitNode);
         }
+
+        /** Visit the queue, update the distances and offer.
+         *  Return the current Distance from root
+         */
+        int visit() {
+            if (!queue.isEmpty()) {
+                currentCommit = queue.poll();
+                updateDistAndOffer();
+            }
+            return allPossibleNodes.get(currentCommit);
+        }
+        boolean contains(String commitID) {
+            return allPossibleNodes.containsKey(commitID);
+        }
+
+        int get(String commitID) {
+            return allPossibleNodes.get(commitID);
+        }
+        /** Add the ancestor of a commit to the Queue and */
+        void updateDistAndOffer() {
+            Commit current = findCommit(currentCommit);
+            if (current.getParentCommit() == null) {
+                return;
+            }
+            int currentDist = allPossibleNodes.get(currentCommit);
+            String parent = current.getParentCommit();
+            if (!queue.contains(parent)) {
+                queue.offer(parent);
+                allPossibleNodes.put(parent, currentDist + 1);
+            }
+            if (current instanceof MergeCommit) {
+                String merge = ((MergeCommit) current).getMergeCommit();
+                if (!queue.contains(merge)) {
+                    queue.offer(merge);
+                    allPossibleNodes.put(merge, currentDist + 1);
+                }
+            }
+        }
+
+        TreeMap<String, Integer> allPossibleNodes;
+        String currentCommit;
+        LinkedList<String> queue;
     }
+
+
 
     /** Process the file according to three commits in merge
      *  Return whether there's a conflict during merge.
