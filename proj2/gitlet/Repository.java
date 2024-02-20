@@ -586,7 +586,7 @@ public class Repository {
         GraphIterator graphTwo = new GraphIterator(secondCommit);
         String splitPoint = null;
         int minDist = (int) Double.POSITIVE_INFINITY;
-        while (!graphOne.queue.isEmpty() || graphTwo.queue.isEmpty()) {
+        while (!graphOne.queue.isEmpty() || !graphTwo.queue.isEmpty()) {
             int dist1 = graphOne.visit();
             int dist2 = graphTwo.visit();
             String commit1 = graphOne.currentCommit;
@@ -595,6 +595,7 @@ public class Repository {
                 int totalDist1 = dist1 + graphTwo.get(commit1);
                 if (totalDist1 < minDist) {
                     splitPoint = commit1;
+                    minDist = totalDist1;
                 }
             }
             if (graphOne.contains(commit2)) {
@@ -641,7 +642,7 @@ public class Repository {
         /** Add the ancestor of a commit to the Queue and */
         void updateDistAndOffer() {
             Commit current = findCommit(currentCommit);
-            if (current.getParentCommit() == null) {
+            if (current.getParentCommit().isEmpty()) {
                 return;
             }
             int currentDist = allPossibleNodes.get(currentCommit);
