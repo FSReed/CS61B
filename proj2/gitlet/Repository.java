@@ -708,7 +708,7 @@ public class Repository {
         newContent += getFileContent(current, fileName);
         newContent += "=======\n";
         newContent += getFileContent(target, fileName);
-        newContent += ">>>>>>>";
+        newContent += ">>>>>>>\n";
         writeContents(join(CWD, fileName), newContent);
         addToStagingArea(fileName);
     }
