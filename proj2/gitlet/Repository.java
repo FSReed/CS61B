@@ -718,10 +718,10 @@ public class Repository {
         Commit currentCommit = findCommit(current);
         TreeMap<String, String> snapshots = currentCommit.getSnapshots();
         if (snapshots == null) {
-            return null;
+            return "";
         }
         if (snapshots.get(fileName) == null) {
-            return null;
+            return "";
         }
         File blob = join(BLOB_PATH, snapshots.get(fileName));
         return readContentsAsString(blob);
