@@ -132,7 +132,13 @@ public class Main {
                     exitWithMessage(remoteExistsError);
                 }
                 break;
-
+            case "rm-remote":
+                paramCheck(args, 2);
+                boolean remoteRemoved = Repository.rm_remote(args[1]);
+                if (!remoteRemoved) {
+                    exitWithMessage(noSuchRemoteError);
+                }
+                break;
             default:
                 exitWithMessage(noCommandError);
         }
@@ -265,4 +271,6 @@ public class Main {
             "Encountered a merge conflict.";
     private static final String remoteExistsError =
             "A remote with that name already exists.";
+    private static final String noSuchRemoteError =
+            "A remote with that name does not exist.";
 }

@@ -755,6 +755,15 @@ public class Repository {
         return true;
     }
 
+    public static boolean rm_remote(String remoteName) {
+        loadRemoteTree();
+        if (!remoteTree.containsKey(remoteName)) {
+            return false;
+        }
+        remoteTree.remove(remoteName);
+        writeObject(REMOTE_TREE, remoteTree);
+        return true;
+    }
 
     /** Helper functions for the whole repo */
     private static void createFile(File file) {
