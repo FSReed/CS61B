@@ -123,6 +123,16 @@ public class Main {
                 int mergeCode = Repository.merge(targetBranch);
                 mergeErrorCodeProcess(mergeCode);
                 break;
+            case "add-remote":
+                paramCheck(args, 3);
+                String remoteName = args[1];
+                String repoPath = args[2];
+                boolean remoteAdded = Repository.add_remote(remoteName, repoPath);
+                if (!remoteAdded) {
+                    exitWithMessage(remoteExistsError);
+                }
+                break;
+
             default:
                 exitWithMessage(noCommandError);
         }
@@ -253,4 +263,6 @@ public class Main {
             "Current branch fast-forwarded.";
     private static final String mergeConflictReport =
             "Encountered a merge conflict.";
+    private static final String remoteExistsError =
+            "A remote with that name already exists.";
 }

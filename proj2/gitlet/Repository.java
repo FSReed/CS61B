@@ -59,11 +59,13 @@ public class Repository {
      * The mapping is: sha1 code of the commit(String) -> commit(Commit)
      */
     public static final File COMMIT_TREE = join(GITLET_DIR, "COMMIT_TREE");
+    public static final File REMOTE_TREE = join(GITLET_DIR, "REMOTE_TREE");
 
     /** Used for lazy-load and lazy-cache */
     private static HashMap<String, Commit> commitTree = null;
     private static TreeMap<String, String> branchTree = null;
     private static TreeMap<String, String> stagedTree = null;
+    private static TreeMap<String, String> remoteTree = null;
 
     /** Status code for checkout a file */
     public static final int CHECKOUT_SUCCESS = 0;
@@ -113,6 +115,9 @@ public class Repository {
         /* Make sure there will always be a map in the COMMIT_TREE */
         writeObject(COMMIT_TREE, new HashMap<>());
         createFile(COMMIT_TREE);
+        /* Make sure there will always be a map in the REMOTE_TREE */
+        writeObject(REMOTE_TREE, new TreeMap<>());
+        createFile(REMOTE_TREE);
         /* Create the master branch */
         writeContents(CURRENT_BRANCH, "master");
         initialCommit();
@@ -737,6 +742,19 @@ public class Repository {
         MergeCommit targetCommit = new MergeCommit(message, parent, target);
         processCommit(targetCommit);
     }
+    /* ------------End of helper function for merge--------------------------*/
+
+    /** Extra Credits */
+    public static boolean add_remote(String remoteName, String repoPath) {
+        loadRemoteTree();
+        if (remoteTree.containsKey(remoteName)) {
+            return false;
+        }
+        remoteTree.put(remoteName, repoPath);
+        writeObject(REMOTE_TREE, remoteTree);
+        return true;
+    }
+
 
     /** Helper functions for the whole repo */
     private static void createFile(File file) {
@@ -760,6 +778,11 @@ public class Repository {
     private static void loadStagedTree() {
         if (stagedTree == null) {
             stagedTree = readObject(STAGED, TreeMap.class);
+        }
+    }
+    private static void loadRemoteTree() {
+        if (remoteTree == null) {
+            remoteTree = readObject(REMOTE_TREE, TreeMap.class);
         }
     }
 }
