@@ -745,7 +745,7 @@ public class Repository {
     /* ------------End of helper function for merge--------------------------*/
 
     /** Extra Credits */
-    public static boolean add_remote(String remoteName, String repoPath) {
+    public static boolean addRemote(String remoteName, String repoPath) {
         loadRemoteTree();
         if (remoteTree.containsKey(remoteName)) {
             return false;
@@ -755,7 +755,7 @@ public class Repository {
         return true;
     }
 
-    public static boolean rm_remote(String remoteName) {
+    public static boolean rmRemote(String remoteName) {
         loadRemoteTree();
         if (!remoteTree.containsKey(remoteName)) {
             return false;

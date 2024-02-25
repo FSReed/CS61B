@@ -127,14 +127,14 @@ public class Main {
                 paramCheck(args, 3);
                 String remoteName = args[1];
                 String repoPath = args[2];
-                boolean remoteAdded = Repository.add_remote(remoteName, repoPath);
+                boolean remoteAdded = Repository.addRemote(remoteName, repoPath);
                 if (!remoteAdded) {
                     exitWithMessage(remoteExistsError);
                 }
                 break;
             case "rm-remote":
                 paramCheck(args, 2);
-                boolean remoteRemoved = Repository.rm_remote(args[1]);
+                boolean remoteRemoved = Repository.rmRemote(args[1]);
                 if (!remoteRemoved) {
                     exitWithMessage(noSuchRemoteError);
                 }
