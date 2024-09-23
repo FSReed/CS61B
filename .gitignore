@@ -6,6 +6,7 @@
 !**/pom.xml
 !.fatweleminus
 !.gitignore
+!.gitmodules
 !*.md
 !*.drawio
 !*.png
