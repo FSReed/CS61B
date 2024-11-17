@@ -37,8 +37,8 @@ public class HexWorld {
      * @param tile: tile to be rendered
      */
     private static void drawRow(TETile[][] world, int X, int Y, int s, int row, TETile tile) {
-        int blanks = 0;
-        int elements = 0;
+        int blanks;
+        int elements;
 
         if (row < s) {
             // Lower half
