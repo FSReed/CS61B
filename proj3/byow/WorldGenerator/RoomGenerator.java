@@ -1,27 +1,9 @@
 package byow.WorldGenerator;
 
 import byow.TileEngine.*;
-import java.util.HashSet;
+import java.util.Set;
 
 public class RoomGenerator {
-
-    private final TETile[][] world;
-    private final int WIDTH; // The maximum width of the map
-    private final int HEIGHT; // The maximum height of the map
-    private final HashSet<Room> rooms; // Stores all the rooms in the map
-
-    /** The constructor of Room Generator
-     * It will modify the original TETile array
-     * @param world: Given world array
-     * @param w: width
-     * @param h: height
-     */
-    public RoomGenerator(TETile[][] world, int w, int h) {
-        this.world = world;
-        this.WIDTH = w;
-        this.HEIGHT = h;
-        this.rooms = new HashSet<>();
-    }
 
     /**
      * Add a rectangular room into the world
@@ -30,7 +12,9 @@ public class RoomGenerator {
      * @param width: Should be positive
      * @param height: Should be positive
      */
-    public boolean addRectangularRoom(int X, int Y, int width, int height) {
+    public boolean addRectangularRoom(int X, int Y, int width, int height, int WIDTH, int HEIGHT,
+                                      TETile[][] world, Set<Room> existingRooms) {
+        // Parameters should be reasonable
         assert X >= 0 && Y >= 0: "The coordinate of the origin should be non-negative";
         assert width > 2 && height > 2: "The width and height should be bigger than 2";
 
@@ -42,10 +26,7 @@ public class RoomGenerator {
             return false;
         }
 
-        // Check for overlapping
-        Room newRoom = new Room(X, Y, width, height);
-        if (overlapping(newRoom)) {
-            // New room overlaps with one or more existing rooms
+        if (overlapping(X, Y, width, height, existingRooms)) {
             return false;
         }
 
@@ -68,35 +49,23 @@ public class RoomGenerator {
             }
         }
 
-        // New room generated. Add it to the room set
-        rooms.add(newRoom);
+        // Update existing rooms:
+        System.out.printf("A new room with size (%d, %d) was generated at (%d, %d)\n", width, height, X, Y);
+        existingRooms.add(new Room(X, Y, width, height));
+
         return true;
     }
 
-    private boolean overlapping(Room newRoom) {
+    private boolean overlapping(int X, int Y, int width, int height, Set<Room> existingRooms) {
         // Check boundaries, with each existing room
-        for (Room existingRoom: rooms) {
-            if (!(newRoom.X + newRoom.width <= existingRoom.X
-                    || newRoom.Y + newRoom.height <= existingRoom.Y
-                    || newRoom.X >= existingRoom.X + existingRoom.width
-                    || newRoom.Y >= existingRoom.Y + existingRoom.height)) {
+        for (Room room: existingRooms) {
+            if (!(X + width <= room.X
+                    || Y + height <= room.Y
+                    || X >= room.X + room.width
+                    || Y >= room.Y + room.height)) {
                 return true;
             }
         }
         return false;
-    }
-
-    private class Room {
-        int width;
-        int height;
-        int X;
-        int Y;
-
-        Room(int x, int y, int w, int h) {
-            this.X = x;
-            this.Y = y;
-            this.width = w;
-            this.height = h;
-        }
     }
 }
