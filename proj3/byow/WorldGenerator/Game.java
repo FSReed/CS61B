@@ -37,7 +37,7 @@ public class Game {
         /* TODO: Connect the rooms */
     }
 
-    private void InitializeRenderer() {
+    private void initializeRenderer() {
         ter.initialize(WIDTH, HEIGHT);
         this.PAINTING = true;
     }
@@ -52,7 +52,7 @@ public class Game {
 
     public void drawMap() {
         if (!PAINTING) {
-            this.InitializeRenderer();
+            this.initializeRenderer();
         }
         ter.renderFrame(world);
     }

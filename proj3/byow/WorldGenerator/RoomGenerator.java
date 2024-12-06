@@ -21,12 +21,8 @@ public class RoomGenerator {
         // Validate the width and height
         width = Math.min(width, WIDTH - X);
         height = Math.min(height, HEIGHT - Y);
-        if (width <= 2 || height <= 2) {
+        if (width <= 2 || height <= 2 || overlapping(X, Y, width, height, existingRooms) ) {
             // This room cannot be generated
-            return false;
-        }
-
-        if (overlapping(X, Y, width, height, existingRooms)) {
             return false;
         }
 
